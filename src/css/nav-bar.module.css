@@ -1,0 +1,75 @@
+.nav {
+  background-color: white; /* Change background color to white */
+  padding: 1rem;
+}
+
+.navList {
+  margin: 0;
+  padding: 0;
+}
+
+.navItem {
+  margin: 0;
+}
+
+.navItem a {
+  color: black; /* Change text color to black for better contrast */
+  text-decoration: none;
+  padding: 1em 1em;
+  margin-bottom: 0.5em;
+  display: block;
+}
+
+.navItem a:hover {
+  background-color: #f0f0f0; /* Change hover background color for better contrast */
+}
+
+.sideNav {
+  height: 100vh;
+  width: 200px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #333; /* Change background color to distinguish it */
+  /* padding-top: 20px; */
+  color: white; /* Ensure text color is white for contrast */
+}
+
+.logoContainer {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+}
+
+.logo {
+  max-width: 100%;
+  height: auto;
+}
+
+.navSearch input {
+  width: calc(100% - 30px); /* Adjust width to fit within the container */
+  padding: 5px;
+  margin: 10px 15px;
+  border-radius: 10px; /* Add border-radius for rounded corners */
+  border: 1px solid #ccc; /* Add border color */
+}
+
+.navList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.navItem {
+  margin: 0;
+}
+
+.navItem a {
+  color: white; /* Ensure link color is white for contrast */
+  text-decoration: none;
+  padding: 10px 15px;
+  display: block;
+}
+
+.navItem a:hover {
+  background-color: #555; /* Change hover background color for better contrast */
+}

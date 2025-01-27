@@ -88,7 +88,7 @@ const WalletSearch: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center py-24 bg-black-100">
+        <div className="min-h-screen flex flex-col items-center py-24 bg-black-100">
             <h1 className="text-3xl font-bold mb-8">Wallet Search</h1>
             <div className="w-full max-w-md">
                 <input
@@ -114,7 +114,7 @@ const WalletSearch: React.FC = () => {
                             <li key={token.mint} className="mb-4 p-4 border rounded">
                                 <div><strong>Token:</strong> {token.tokenName} ({token.tokenSymbol})</div>
                                 <div><strong>Balance:</strong> {token.balance}</div>
-                                <div className="text-sm text-gray-500"><strong>Mint:</strong> {token.mint}</div>
+                                <div className="text-sm text-gray-500"><strong>Address:</strong> {token.mint}</div>
                             </li>
                         ))}
                     </ul>

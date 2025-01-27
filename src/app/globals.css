@@ -30,22 +30,7 @@
   font-style: italic;
 }
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  margin: 25px;
-  color: var(--foreground);
-  background: var(--background);
   font-family: 'JetBrainsMono Nerd Font', monospace;
 
 }
