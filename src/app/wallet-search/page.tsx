@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState } from 'react';
 import axios from 'axios';
 
@@ -88,8 +90,8 @@ const WalletSearch: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen flex flex-col items-center py-24 bg-black-100">
-            <h1 className="text-3xl font-bold mb-8">Wallet Search</h1>
+        <div className="min-h-screen flex flex-col items-center py-24  bg-gray-700">
+            <h1 className="text-3xl font-bold mb-8 text-white">Wallet Search</h1>
             <div className="w-full max-w-md">
                 <input
                     type="text"

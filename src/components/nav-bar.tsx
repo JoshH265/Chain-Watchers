@@ -1,28 +1,45 @@
+'use client'
+
 import React from 'react';
 import Link from 'next/link';
-import styles from '../css/nav-bar.module.css';
 
-const NavBar: React.FC = () => {
+const NavBar = () => {
   return (
-    <nav className={styles.sideNav}>
-      <div className={styles.logoContainer}>
-        <img src="/images/placeholder.svg" alt="Logo" className={styles.logo} />
+    <nav className="h-screen w-64 fixed top-0 left-0 bg-gray-800 text-white">
+      <div className="mb-4 p-4">
+        <img 
+          src="/images/logo-temp.png" 
+          alt="Logo" 
+          className="w-full h-auto"
+        />
       </div>
-      <ul className={styles.navList}>
-        <li className={styles.navSearch}>
-          <input type="text" placeholder="Search.." />
+      <ul className="list-none p-0 m-0">
+        <li className="mb-4 px-4">
+          <input 
+            type="text" 
+            placeholder="Search.." 
+            className="w-full p-2 rounded border border-gray-300"
+          />
         </li>
-        <li className={styles.navItem}>
-          <Link href="/">Home</Link>
+        <li className="mb-2">
+          <Link className="block px-4 py-2 hover:bg-gray-700" href="/">
+            Home
+          </Link>
         </li>
-        <li className={styles.navItem}>
-          <Link href="/wallet-search">Wallet Search</Link>
+        <li className="mb-2">
+          <Link className="block px-4 py-2 hover:bg-gray-700" href="/wallet-search">
+            Wallet Search
+          </Link>
         </li>
-        <li className={styles.navItem}>
-          <Link href="/wallet-storage">Wallet Storage</Link>
+        <li className="mb-2">
+          <Link className="block px-4 py-2 hover:bg-gray-700" href="/wallet-storage">
+            Wallet Storage
+          </Link>
         </li>
-        <li className={styles.navItem}>
-          <Link href="/">Features</Link>
+        <li className="mb-2">
+          <Link className="block px-4 py-2 hover:bg-gray-700" href="/">
+            Features
+          </Link>
         </li>
       </ul>
     </nav>

@@ -1,14 +1,8 @@
 {
-  // Add semicolons at the end of statements
   "semi": true,
-  // Add trailing commas where valid in ES5
   "trailingComma": "es5",
-  // Use single quotes instead of double quotes
   "singleQuote": true,
-  // Number of spaces per indentation level
   "tabWidth": 2,
-  // Use spaces instead of tabs
   "useTabs": false,
-  // Sort Tailwind CSS classes
   "plugins": ["prettier-plugin-tailwindcss"]
 }
