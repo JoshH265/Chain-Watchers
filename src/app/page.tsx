@@ -1,7 +1,5 @@
 'use client'
 
-import '../css/index.css';
-
 export default function Home() {
   return (
     <section className='min-h-screen flex flex-col justify-center py-24 bg-gray-700'>
