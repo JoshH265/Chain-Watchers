@@ -2,7 +2,7 @@
 
 export default function Home() {
   return (
-    <section className='min-h-screen flex flex-col justify-center py-24 bg-gray-700'>
+    <section className='min-h-screen flex flex-col justify-center py-24 bg-gray-700 text-white'>
       <div className="flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-3xl font-bold">Chain Watchers</h1>
