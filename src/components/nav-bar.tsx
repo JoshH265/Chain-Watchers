@@ -36,11 +36,6 @@ const NavBar = () => {
             Wallet Storage
           </Link>
         </li>
-        <li className="mb-2">
-          <Link className="block px-4 py-2 hover:bg-gray-700" href="/">
-            Features
-          </Link>
-        </li>
       </ul>
     </nav>
   );
