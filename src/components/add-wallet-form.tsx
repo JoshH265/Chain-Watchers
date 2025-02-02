@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface WalletFormData {
   wallet: string;
@@ -11,14 +11,21 @@ interface WalletFormData {
 interface AddWalletFormProps {
   onSubmit: (data: WalletFormData) => Promise<void>;
   onCancel: () => void;
+  initialData?: WalletFormData; // Add initialData prop
 }
 
-const AddWalletForm: React.FC<AddWalletFormProps> = ({ onSubmit, onCancel }) => {
+const AddWalletForm: React.FC<AddWalletFormProps> = ({ onSubmit, onCancel, initialData }) => {
   const [formData, setFormData] = useState<WalletFormData>({
     wallet: '',
     name: '',
     tags: ''
   });
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData);
+    }
+  }, [initialData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
