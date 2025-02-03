@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import AddWalletForm from '../../components/add-wallet-form';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
-// Define the Wallet interface
 interface Wallet {
   _id: string;
   wallet: string;
@@ -12,14 +13,11 @@ interface Wallet {
 }
 
 const WalletStorage: React.FC = () => {
-  // State to store the list of wallets
+  const router = useRouter();
   const [wallets, setWallets] = useState<Wallet[]>([]);
-  // State to manage the visibility of the add wallet form
   const [isAddingWallet, setIsAddingWallet] = useState(false);
-  // State to manage the wallet being edited
   const [editingWallet, setEditingWallet] = useState<Wallet | null>(null);
 
-  // Function to fetch wallets from the API
   const fetchWallets = async () => {
     try {
       const response = await fetch('/api/wallet-storage');
@@ -35,12 +33,10 @@ const WalletStorage: React.FC = () => {
     }
   };
 
-  // Fetch wallets when the component mounts
   useEffect(() => {
     fetchWallets();
   }, []);
 
-  // Function to handle adding a new wallet
   const handleAddWallet = async (formData: { wallet: string; name: string; tags: string }) => {
     try {
       const response = await fetch('/api/wallet-storage', {
@@ -55,7 +51,6 @@ const WalletStorage: React.FC = () => {
         throw new Error('Failed to add wallet');
       }
 
-      // Refresh the wallet list after adding a new wallet
       fetchWallets();
       setIsAddingWallet(false);
     } catch (error) {
@@ -63,7 +58,6 @@ const WalletStorage: React.FC = () => {
     }
   };
 
-  // Function to handle editing a wallet
   const handleEditWallet = async (formData: { wallet: string; name: string; tags: string }) => {
     try {
       if (!editingWallet) return;
@@ -80,7 +74,6 @@ const WalletStorage: React.FC = () => {
         throw new Error('Failed to edit wallet');
       }
 
-      // Refresh the wallet list after editing a wallet
       fetchWallets();
       setEditingWallet(null);
       setIsAddingWallet(false);
@@ -89,7 +82,6 @@ const WalletStorage: React.FC = () => {
     }
   };
 
-  // Function to handle removing a wallet
   const handleRemoveWallet = async (walletId: string) => {
     try {
       const response = await fetch(`/api/wallet-storage?id=${walletId}`, {
@@ -100,7 +92,6 @@ const WalletStorage: React.FC = () => {
         throw new Error('Failed to remove wallet');
       }
 
-      // Refresh the wallet list after removing a wallet
       fetchWallets();
     } catch (error) {
       console.error('Error removing wallet:', error);
@@ -112,7 +103,6 @@ const WalletStorage: React.FC = () => {
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-white">Wallet Storage</h1>
-          {/* Button to toggle the add wallet form */}
           <button 
             onClick={() => {
               setIsAddingWallet(!isAddingWallet);
@@ -124,7 +114,6 @@ const WalletStorage: React.FC = () => {
           </button>
         </div>
 
-        {/* Render the add wallet form if isAddingWallet is true */}
         {isAddingWallet && (
           <AddWalletForm 
             onSubmit={editingWallet ? handleEditWallet : handleAddWallet} 
@@ -140,7 +129,6 @@ const WalletStorage: React.FC = () => {
           />
         )}
 
-        {/* Display the list of wallets */}
         <div className="space-y-4">
           {wallets.map((wallet) => (
             <div 
@@ -148,10 +136,15 @@ const WalletStorage: React.FC = () => {
               className="bg-gray-800 p-6 rounded-lg shadow-lg"
             >
               <div className="text-white space-y-2">
-                <p>{wallet.name}</p>
+                <Link
+                  href={`/wallet-profile/${wallet.wallet}`}
+                  className="text-blue-500 hover:underline"
+                >
+                  <p>{wallet.name}</p>
+                </Link>
                 <p className="font-mono break-all">{wallet.wallet}</p>
                 <p className="text-sm text-gray-400 mt-4">Tags</p>
-                <div className="flex flex-row justify-between"> {/* Div splits the tags and remove button */}
+                <div className="flex flex-row justify-between">
                   <div className="flex flex-row space-x-2">
                     {(wallet.tags || '').split(',')
                       .filter(tag => tag.trim())
@@ -181,7 +174,6 @@ const WalletStorage: React.FC = () => {
           ))}
         </div>
 
-        {/* Display a message if no wallets are found */}
         {wallets.length === 0 && (
           <div className="text-center text-gray-400 mt-8">
             No wallets found. Add your first wallet using the button above.
