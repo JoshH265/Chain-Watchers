@@ -12,6 +12,10 @@ export default {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      fontFamily: {
+        sans: ['JetBrainsMono Nerd Font', 'monospace'],
+        mono: ['JetBrainsMono Nerd Font', 'monospace'],
+      },
     },
   },
   plugins: [],
