@@ -2,25 +2,43 @@ import axios from 'axios';
 
 const apiKey = process.env.NEXT_PUBLIC_HELIUS_API_KEY;
 
+const MAX_RETRIES = 5;
+const RETRY_DELAY = 1000; // Initial delay in milliseconds
+
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export const getWalletData = async (walletAddress: string) => {
-    try {
-        const response = await axios.get(
-            `https://api.helius.xyz/v0/addresses/${walletAddress}/balances?api-key=${apiKey}`
-        );
+    let retries = 0;
 
-        const solBalance = response.data.nativeBalance 
-            ? response.data.nativeBalance / Math.pow(10, 9) // Convert lamports to SOL
-            : 0;
+    while (retries < MAX_RETRIES) {
+        try {
+            const response = await axios.get(
+                `https://api.helius.xyz/v0/addresses/${walletAddress}/balances?api-key=${apiKey}`
+            );
 
-        const tokens = response.data.tokens 
-            ? response.data.tokens.filter((token: any) => token.amount > 0)
-            : [];
+            const solBalance = response.data.nativeBalance 
+                ? response.data.nativeBalance / Math.pow(10, 9) // Convert lamports to SOL
+                : 0;
 
-        return { solBalance, tokens };
-    } catch (error) {
-        console.error('Error fetching wallet data:', error);
-        throw error;
+            const tokens = response.data.tokens 
+                ? response.data.tokens.filter((token: any) => token.amount > 0)
+                : [];
+
+            return { solBalance, tokens };
+        } catch (error) {
+            if ((error as any).response && (error as any).response.status === 429) {
+                retries++;
+                const delayTime = RETRY_DELAY * Math.pow(2, retries);
+                console.warn(`Rate limited. Retrying in ${delayTime}ms...`);
+                await delay(delayTime);
+            } else {
+                console.error('Error fetching wallet data:', error);
+                throw error;
+            }
+        }
     }
+
+    throw new Error('Max retries reached. Failed to fetch wallet data.');
 };
 
 export const getTokenMetadata = async (mintAddresses: string[]) => {
@@ -44,8 +62,6 @@ export const getTokenMetadata = async (mintAddresses: string[]) => {
         return [];
     }
 };
-
-
 
 // DO TO LIST
 // ADD THE DATABASE QUERY TO CHECK IF A WALLET THAT IS BEING SEARCHED EXISTS IN THE DATABASE

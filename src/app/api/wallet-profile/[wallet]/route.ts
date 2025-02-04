@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/db';
+import { getWalletData, getTokenMetadata } from '../../wallet-search/route';
 
 export async function GET(
   request: Request,
@@ -22,7 +23,38 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(wallet);
+    const { solBalance, tokens: activeTokens } = await getWalletData(walletAddress);
+
+    let tokensWithDetails = [];
+    if (activeTokens.length > 0) {
+      const mintAddresses = activeTokens.map((token: any) => token.mint);
+      const metadata = await getTokenMetadata(mintAddresses);
+
+      tokensWithDetails = activeTokens
+        .filter((token: any) => {
+          const balance = token.amount / Math.pow(10, token.decimals);
+          return balance > 1;
+        })
+        .map((token: any) => {
+          const tokenMetadata = metadata?.find(
+            (meta: any) => meta?.id === token.mint
+          );
+
+          return {
+            mint: token.mint,
+            tokenName: tokenMetadata?.content?.metadata?.name || 
+                     tokenMetadata?.content?.json?.name ||
+                     'Unknown',
+            tokenSymbol: tokenMetadata?.content?.metadata?.symbol || 
+                       tokenMetadata?.content?.json?.symbol ||
+                       '???',
+            balance: parseFloat((token.amount / Math.pow(10, token.decimals)).toFixed(2)),
+            decimals: token.decimals
+          };
+        });
+    }
+
+    return NextResponse.json({ ...wallet, solBalance, tokens: tokensWithDetails });
   } catch (error) {
     console.error('Error fetching wallet:', error);
     return NextResponse.json(
