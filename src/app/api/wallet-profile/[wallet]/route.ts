@@ -3,9 +3,14 @@ import clientPromise from '@/lib/db';
 import { getWalletData, getTokenMetadata } from '../../wallet-search/route';
 import { Token, TokenMetadata, TokenWithDetails } from '@/app/types';
 
-export async function GET(request: NextRequest, context: any): Promise<NextResponse> {
+// Mark this route as dynamic so we can use dynamic parameters synchronously.
+export const dynamic = 'force-dynamic';
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { wallet: string } }
+): Promise<NextResponse> {
   try {
-    const { params } = context; // extract params without strict typing
     const walletAddress = params.wallet;
 
     const client = await clientPromise;
