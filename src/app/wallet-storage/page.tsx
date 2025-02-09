@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import AddWalletForm from '../../components/add-wallet-form';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import {getWalletData} from '../api/wallet-search/route'; // TESTING IMPORT TO REUSE FUNCTION
 
 // Define the structure for wallet data
@@ -16,7 +15,6 @@ interface Wallet {
 
 // Main component for wallet management
 const WalletStorage: React.FC = () => {
-  const router = useRouter();
   // State management for wallet list and UI controls
   const [wallets, setWallets] = useState<Wallet[]>([]); // Stores all wallets
   const [isAddingWallet, setIsAddingWallet] = useState(false); // Controls add/edit form visibility
@@ -55,8 +53,8 @@ const WalletStorage: React.FC = () => {
       }), {});
 
       setSolBalances(balanceObject);
-    } catch (error) {
-      console.error('Failed to fetch wallets:', error);
+    } catch (_error) {
+      console.error('Failed to fetch wallets:', _error);
     }
   };
 
@@ -82,8 +80,8 @@ const WalletStorage: React.FC = () => {
 
       fetchWallets();        // Refresh wallet list
       setIsAddingWallet(false);  // Hide the form
-    } catch (error) {
-      console.error('Error adding wallet:', error);
+    } catch (_error) {
+      console.error('Error adding wallet:', _error);
     }
   };
 
@@ -107,8 +105,8 @@ const WalletStorage: React.FC = () => {
       fetchWallets(); // Refresh wallet list
       setEditingWallet(null); // Clear editing state
       setIsAddingWallet(false); // Hide the form
-    } catch (error) {
-      console.error('Error editing wallet:', error);
+    } catch (_error) {
+      console.error('Error editing wallet:', _error);
     }
   };
 
@@ -124,8 +122,8 @@ const WalletStorage: React.FC = () => {
       }
 
       fetchWallets();  // Refresh wallet list
-    } catch (error) {
-      console.error('Error removing wallet:', error);
+    } catch (_error) {
+      console.error('Error removing wallet:', _error);
     }
   };
 

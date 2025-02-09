@@ -3,7 +3,7 @@ import { MongoClient } from 'mongodb';
 const uri = process.env.MONGODB_URI || '';
 const options = {};
 
-let client;
+let client: MongoClient | null = null;
 let clientPromise: Promise<MongoClient>;
 
 declare global {

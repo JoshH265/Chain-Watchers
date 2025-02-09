@@ -1,171 +1,165 @@
+// src/app/wallet-profile/[wallet]/page.tsx
 'use client'
 
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Copy } from 'lucide-react';
 import { getTokenMetadata, getWalletData } from '../../api/wallet-search/route';
-
-interface Wallet {
-  _id: string;
-  wallet: string;
-  name: string;
-  tags: string;
-}
+import { Token, TokenMetadata, TokenWithDetails, Wallet } from '@/app/types';
 
 const copyToClipboard = async (text: string): Promise<void> => {
     try {
-      await navigator.clipboard.writeText(text);
-      // Optionally add some feedback that it was copied
+        await navigator.clipboard.writeText(text);
     } catch (err) {
-      console.error('Failed to copy text: ', err);
+        console.error('Failed to copy text: ', err);
     }
 };
 
 export default function WalletProfile() {
-  const params = useParams();
-  const walletAddress = params.wallet as string;
-  const [walletData, setWalletData] = useState<Wallet | null>(null);
-  const [tokens, setTokens] = useState<any[]>([]);
-  const [solBalance, setSolBalance] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+    const params = useParams();
+    const walletAddress = params.wallet as string;
+    const [walletData, setWalletData] = useState<Wallet | null>(null);
+    const [tokens, setTokens] = useState<TokenWithDetails[]>([]);
+    const [solBalance, setSolBalance] = useState<number | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchWalletData = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch(`/api/wallet-profile/${walletAddress}`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch wallet data');
-        }
-        
-        const data = await response.json();
-        setWalletData(data);
+    useEffect(() => {
+        const fetchWalletData = async () => {
+            try {
+                setIsLoading(true);
+                const response = await fetch(`/api/wallet-profile/${walletAddress}`);
 
-        const { solBalance, tokens: activeTokens } = await getWalletData(walletAddress);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch wallet data');
+                }
 
-        setSolBalance(parseFloat(solBalance.toFixed(2))); // Set the SOL balance in state with 2 decimal points
+                const data = await response.json();
+                setWalletData(data);
 
-        if (activeTokens.length > 0) {
-          const mintAddresses = activeTokens.map((token: any) => token.mint);
-          const metadata = await getTokenMetadata(mintAddresses);
+                const { solBalance, tokens: activeTokens } = await getWalletData(walletAddress);
 
-          const tokensWithDetails = activeTokens.map((token: any) => {
-            const tokenMetadata = metadata?.find(
-              (meta: any) => meta?.id === token.mint
-            );
+                setSolBalance(parseFloat(solBalance.toFixed(2)));
 
-            return {
-              mint: token.mint,
-              tokenName: tokenMetadata?.content?.metadata?.name || 
-                       tokenMetadata?.content?.json?.name ||
-                       'Unknown',
-              tokenSymbol: tokenMetadata?.content?.metadata?.symbol || 
-                         tokenMetadata?.content?.json?.symbol ||
-                         '???',
-              balance: parseFloat((token.amount / Math.pow(10, token.decimals)).toFixed(2)), // Format balance to 2 decimal points
-              decimals: token.decimals
-            };
-          });
+                if (activeTokens.length > 0) {
+                    const mintAddresses = activeTokens.map((token: Token) => token.mint);
+                    const metadata = await getTokenMetadata(mintAddresses);
 
-          setTokens(tokensWithDetails);
-          setError(null);
-        } else {
-          setError('No token data found');
-          setTokens([]);
-        }
+                    const tokensWithDetails = activeTokens.map((token: Token) => {
+                        const tokenMetadata = metadata?.find(
+                            (meta: TokenMetadata) => meta?.id === token.mint
+                        );
 
-      } catch (error) {
-        console.error('Error fetching wallet data:', error);
-        setError('Failed to load wallet data');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+                        return {
+                            mint: token.mint,
+                            tokenName: tokenMetadata?.content?.metadata?.name ||
+                                tokenMetadata?.content?.json?.name ||
+                                'Unknown',
+                            tokenSymbol: tokenMetadata?.content?.metadata?.symbol ||
+                                tokenMetadata?.content?.json?.symbol ||
+                                '???',
+                            balance: parseFloat((token.amount / Math.pow(10, token.decimals)).toFixed(2)),
+                            decimals: token.decimals
+                        };
+                    });
 
-    fetchWalletData();
-  }, [walletAddress]);
+                    setTokens(tokensWithDetails);
+                    setError(null);
+                } else {
+                    setError('No token data found');
+                    setTokens([]);
+                }
 
-  if (isLoading) {
+            } catch (error) {
+                console.error('Error fetching wallet data:', error);
+                setError('Failed to load wallet data');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchWalletData();
+    }, [walletAddress]);
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-gray-700 p-8">
+                <div className="max-w-4xl mx-auto text-white">
+                    Loading...
+                </div>
+            </div>
+        );
+    }
+
+    if (error || !walletData) {
+        return (
+            <div className="min-h-screen bg-gray-700 p-8">
+                <div className="max-w-4xl mx-auto text-white">
+                    {error || 'Wallet not found'}
+                </div>
+            </div>
+        );
+    }
+
     return (
-      <div className="min-h-screen bg-gray-700 p-8">
-        <div className="max-w-4xl mx-auto text-white">
-          Loading...
+        <div className="min-h-screen bg-gray-700 p-8">
+            <div className="max-w-4xl mx-auto bg-gray-500 p-5 rounded-lg">
+                {/* Wallet Name Section */}
+                <h1 className="text-3xl font-bold text-black mb">
+                    {walletData.name}
+                </h1>
+                <div className="rounded-lg text-white">
+                    {/* Wallet Address Section */}
+                    <div className="flex items-center space-x-2">
+                        <p className="font-mono break-all font-semibold text-black">{walletData.wallet}</p>
+                        <button
+                            onClick={() => copyToClipboard(walletData.wallet)}
+                            className="hover:bg-gray-700 rounded-full transition-colors"
+                            title="Copy wallet address"
+                            type="button"
+                        >
+                            <Copy size={16} className="text-white" />
+                        </button>
+                    </div>
+                    {/* Tags Section */}
+                    <div className="flex flex-row space-x-2 mt-2">
+                        {(walletData.tags || '').split(',')
+                            .filter(tag => tag.trim())
+                            .map((tag, index) => (
+                                <span
+                                    key={index}
+                                    className="bg-gray-700 px-2 py-1 rounded-full text-sm"
+                                >
+                                    {tag.trim()}
+                                </span>
+                            ))}
+                    </div>
+                </div>
+                {/* SOL Balance Section */}
+                {solBalance !== null && (
+                    <div className="mt8 w-full max-w-2xl pt-4">
+                        <h2 className="text-l font-bold">Sol balance: {solBalance}</h2>
+                    </div>
+                )}
+            </div>
+            {/* Tokens Section */}
+            <div className="max-w-4xl mx-auto p-5 rounded-lg">
+                {tokens.length > 0 && (
+                    <div className="mt-8 w-full max-w-2xl rounded shadow">
+                        <ul>
+                            {tokens.map((token) => (
+                                <li key={token.mint} className="mb-4 p-4 rounded-lg bg-gray-500 border border-black-400">
+                                    <div><strong>Token:</strong> {token.tokenName} ({token.tokenSymbol})</div>
+                                    {token.balance > 1 && (
+                                        <div><strong>Balance:</strong> {token.balance}</div>
+                                    )}
+                                    <div className="text-sm text-white"><strong>Address:</strong> {token.mint}</div>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+            </div>
         </div>
-      </div>
     );
-  }
-
-  if (error || !walletData) {
-    return (
-      <div className="min-h-screen bg-gray-700 p-8">
-        <div className="max-w-4xl mx-auto text-white">
-          {error || 'Wallet not found'}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-700 p-8">
-      <div className="max-w-4xl mx-auto bg-gray-500 p-5 rounded-lg">
-        {/* Wallet Name Section */}
-        <h1 className="text-3xl font-bold text-black mb">
-          {walletData.name}
-        </h1>
-        <div className="rounded-lg text-white">
-          {/* Wallet Address Section */}
-          <div className="flex items-center space-x-2">
-            <p className="font-mono break-all font-semibold text-black">{walletData.wallet}</p>
-            <button 
-              onClick={() => copyToClipboard(walletData.wallet)}
-              className="hover:bg-gray-700 rounded-full transition-colors"
-              title="Copy wallet address"
-              type="button"
-            >
-              <Copy size={16} className="text-white" />
-            </button>
-          </div>
-          {/* Tags Section */}
-          <div className="flex flex-row space-x-2 mt-2">
-            {(walletData.tags || '').split(',')
-              .filter(tag => tag.trim())
-              .map((tag, index) => (
-                <span 
-                  key={index}
-                  className="bg-gray-700 px-2 py-1 rounded-full text-sm"
-                >
-                  {tag.trim()}
-                </span>
-              ))}
-          </div>
-        </div>
-        {/* SOL Balance Section */}
-        {solBalance !== null && (
-          <div className="mt8 w-full max-w-2xl pt-4">
-            <h2 className="text-l font-bold">Sol balance: {solBalance}</h2>
-          </div>
-        )}
-        </div>
-        {/* Tokens Section */}
-        <div className="max-w-4xl mx-auto p-5 rounded-lg">
-        {tokens.length > 0 && (
-          <div className="mt-8 w-full max-w-2xl rounded shadow ">
-            <ul>
-              {tokens.map((token) => (
-                <li key={token.mint} className="mb-4 p-4 rounded-lg bg-gray-500 border border-black-400">
-                  <div><strong>Token:</strong> {token.tokenName} ({token.tokenSymbol})</div>
-                  {token.balance > 1 && (
-                  <div><strong>Balance:</strong> {token.balance}</div>
-                  )}
-                  <div className="text-sm text-white"><strong>Address:</strong> {token.mint}</div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        </div>
-    </div>
-  );
 }
