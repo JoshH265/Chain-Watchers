@@ -1,17 +1,22 @@
-// src/app/api/wallet-profile/[wallet]/route.ts
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/db';
 import { getWalletData, getTokenMetadata } from '../../wallet-search/route';
 import { Token, TokenMetadata, TokenWithDetails } from '@/app/types';
 
+type Props = {
+    params: {
+        wallet: string
+    }
+}
+
 export async function GET(
-   request: NextRequest,
-   { params }: { params: { wallet: string } }
+    request: Request,
+    props: Props
 ) {
-   try {
-       const client = await clientPromise;
-       const db = client.db('wallets');
-       const walletAddress = params.wallet;
+    try {
+        const client = await clientPromise;
+        const db = client.db('wallets');
+        const walletAddress = props.params.wallet;
 
        const wallet = await db.collection('solana').findOne(
            { wallet: walletAddress },
