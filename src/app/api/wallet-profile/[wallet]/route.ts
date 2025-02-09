@@ -8,10 +8,10 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: NextRequest,
-  context: { params: { wallet: string } }
+  context: any
 ): Promise<NextResponse> {
   // Await the parameters to satisfy Next.js' dynamic route requirement
-  const params = await Promise.resolve(context.params);
+  const params = await context.params;
   const walletAddress = params.wallet;
 
   try {
