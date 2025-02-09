@@ -37,7 +37,7 @@ const WalletSearch: React.FC = () => {
                         tokenSymbol: tokenMetadata?.content?.metadata?.symbol || 
                                    tokenMetadata?.content?.json?.symbol ||
                                    '???',
-                        balance: parseFloat((token.amount / Math.pow(10, token.decimals)).toFixed(2)), // Format balance to 2 decimal points
+                        balance: parseFloat((token.amount / Math.pow(10, token.decimals)).toFixed(2)),
                         decimals: token.decimals
                     };
                 });
