@@ -7,7 +7,7 @@ let client: MongoClient | null = null;
 let clientPromise: Promise<MongoClient>;
 
 declare global {
-  var _mongoClientPromise: Promise<MongoClient>;
+  var _mongoClientPromise: Promise<MongoClient>;  // Keep as var for global declarations
 }
 
 if (!uri) {
