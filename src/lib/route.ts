@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import { WalletBalanceResponse, TokenMetadata, HeliusMetadataResponse } from '@/app/types';
 
 const apiKey = process.env.NEXT_PUBLIC_HELIUS_API_KEY;
@@ -9,9 +9,13 @@ const RETRY_DELAY = 1000;
 const delay = (ms: number): Promise<void> =>
     new Promise(resolve => setTimeout(resolve, ms));
 
+interface Token {
+  amount: number;
+}
+
 export const getWalletData = async (
   walletAddress: string
-): Promise<{ solBalance: number; tokens: any[] }> => {
+): Promise<{ solBalance: number; tokens: Token[] }> => {
   let retries = 0;
 
   while (retries < MAX_RETRIES) {
@@ -24,8 +28,8 @@ export const getWalletData = async (
         ? response.data.nativeBalance / Math.pow(10, 9)
         : 0;
 
-      const tokens = response.data.tokens
-        ? response.data.tokens.filter(token => token.amount > 0)
+      const tokens: Token[] = response.data.tokens
+        ? response.data.tokens.filter((token: Token) => token.amount > 0)
         : [];
 
       return { solBalance, tokens };
