@@ -40,7 +40,7 @@ const WalletStorage: React.FC = () => {
             wallet: wallet.wallet,
             balance: parseFloat(solBalance.toFixed(2))
           }))
-          .catch(error => ({
+          .catch(_error => ({
             wallet: wallet.wallet,
             balance: 0
           }))

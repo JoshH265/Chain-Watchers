@@ -1,10 +1,10 @@
-'use client'
+// 'use client'
 
-//import React, { useState } from 'react';
+// //import React, { useState } from 'react';
 
-interface AddWalletPopupProps {
-  onSubmit: (wallet: string) => void;
-  onCancel: () => void;
-}
+// interface AddWalletPopupProps {
+//   onSubmit: (wallet: string) => void;
+//   onCancel: () => void;
+// }
 
 
