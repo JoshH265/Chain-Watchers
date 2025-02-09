@@ -3,9 +3,38 @@
 import React, { useState } from 'react';
 import { getTokenMetadata, getWalletData } from '../api/wallet-search/route';
 
+// Defines structure for token metadata response and does not use ANY type
+interface TokenMetadata {
+  id?: string;
+  content?: {
+    metadata?: {
+      name?: string;
+      symbol?: string;
+    };
+    json?: {
+      name?: string;
+      symbol?: string;
+    };
+  };
+}
+
+interface Token {
+  mint: string;
+  amount: number;
+  decimals: number;
+}
+
+interface TokenWithDetails {
+  mint: string;
+  tokenName: string;
+  tokenSymbol: string;
+  balance: number;
+  decimals: number;
+}
+
 const WalletSearch: React.FC = () => {
     const [walletAddress, setWalletAddress] = useState('');
-    const [tokens, setTokens] = useState<any[]>([]);
+    const [tokens, setTokens] = useState<TokenWithDetails[]>([]);
     const [solBalance, setSolBalance] = useState<number | null>(null);
     const [error, setError] = useState<string | null>(null);
 
@@ -21,12 +50,12 @@ const WalletSearch: React.FC = () => {
             setSolBalance(parseFloat(solBalance.toFixed(2))); // Set the SOL balance in state with 2 decimal points
 
             if (activeTokens.length > 0) {
-                const mintAddresses = activeTokens.map((token: any) => token.mint);
+                const mintAddresses = activeTokens.map((token: Token) => token.mint);
                 const metadata = await getTokenMetadata(mintAddresses);
 
-                const tokensWithDetails = activeTokens.map((token: any) => {
+                const tokensWithDetails = activeTokens.map((token: Token) => {
                     const tokenMetadata = metadata?.find(
-                        (meta: any) => meta?.id === token.mint
+                        (meta: TokenMetadata) => meta?.id === token.mint
                     );
 
                     return {
