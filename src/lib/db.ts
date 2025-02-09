@@ -7,8 +7,8 @@ let client: MongoClient | null = null;
 let clientPromise: Promise<MongoClient>;
 
 declare global {
-  var _mongoClientPromise: Promise<MongoClient>;  // Keep as var for global declarations
-}
+  // eslint-disable-next-line no-var
+  var _mongoClientPromise: Promise<MongoClient>;}
 
 if (!uri) {
   throw new Error('Please add your Mongo URI to .env.local');
