@@ -3,14 +3,13 @@ import clientPromise from '@/lib/db';
 import { getWalletData, getTokenMetadata } from '../../wallet-search/route';
 import { Token, TokenMetadata, TokenWithDetails } from '@/app/types';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { wallet: string } }
-): Promise<NextResponse> {
+export async function GET(request: NextRequest, context: any): Promise<NextResponse> {
   try {
+    const { params } = context; // extract params without strict typing
+    const walletAddress = params.wallet;
+
     const client = await clientPromise;
     const db = client.db('wallets');
-    const walletAddress = params.wallet;
 
     const wallet = await db.collection('solana').findOne(
       { wallet: walletAddress },
