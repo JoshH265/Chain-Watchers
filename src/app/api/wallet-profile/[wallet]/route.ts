@@ -3,15 +3,21 @@ import clientPromise from '@/lib/db';
 import { getWalletData, getTokenMetadata } from '../../wallet-search/route';
 import { Token, TokenMetadata, TokenWithDetails } from '@/app/types';
 
+interface RouteContext {
+  params: {
+    wallet: string;
+  };
+}
+
 // Mark this route as dynamic so we can use dynamic parameters synchronously.
 export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: NextRequest,
-  context: any
+  context: RouteContext
 ): Promise<NextResponse> {
   // Await the parameters to satisfy Next.js' dynamic route requirement
-  const params = await context.params;
+  const params = await Promise.resolve(context.params);
   const walletAddress = params.wallet;
 
   try {
