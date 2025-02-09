@@ -6,12 +6,12 @@ import { Token, TokenMetadata, TokenWithDetails } from '@/app/types';
 
 export async function GET(
     request: Request,
-    { params }: { params: { wallet: string } }
+    context: { params: { wallet: string } }
 ) {
     try {
         const client = await clientPromise;
         const db = client.db('wallets');
-        const walletAddress = params.wallet;
+        const walletAddress = context.params.wallet;
 
         const wallet = await db.collection('solana').findOne(
             { wallet: walletAddress },
