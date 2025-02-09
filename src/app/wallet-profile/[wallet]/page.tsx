@@ -4,7 +4,7 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Copy } from 'lucide-react';
-import { getTokenMetadata, getWalletData } from '../../../lib/route';
+import { getTokenMetadata, getWalletData } from '../../../lib/wallet-search-api';
 import { Token, TokenMetadata, TokenWithDetails, Wallet } from '@/app/types';
 
 const copyToClipboard = async (text: string): Promise<void> => {

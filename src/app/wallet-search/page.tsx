@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react';
-import { getTokenMetadata, getWalletData } from '../../lib/route';
+import { getTokenMetadata, getWalletData } from '../../lib/wallet-search-api';
 
 // Defines structure for token metadata response and does not use ANY type
 interface TokenMetadata {

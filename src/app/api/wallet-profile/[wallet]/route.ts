@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { NextResponse, NextRequest } from 'next/server';
 import clientPromise from '@/lib/db';
-import { getWalletData, getTokenMetadata } from '../../../../lib/route';
+import { getWalletData, getTokenMetadata } from '../../../../lib/wallet-search-api';
 import { Token, TokenMetadata, TokenWithDetails } from '@/app/types';
 
 // Mark this route as dynamic so we can use dynamic parameters synchronously.

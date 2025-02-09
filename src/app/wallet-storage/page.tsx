@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import AddWalletForm from '../../components/add-wallet-form';
 import Link from 'next/link';
-import {getWalletData} from '../../lib/route'; // TESTING IMPORT TO REUSE FUNCTION
+import {getWalletData} from '../../lib/wallet-search-api'; // TESTING IMPORT TO REUSE FUNCTION
 
 // Define the structure for wallet data
 interface Wallet {
