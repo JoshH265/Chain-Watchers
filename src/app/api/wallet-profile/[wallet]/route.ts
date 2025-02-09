@@ -5,7 +5,7 @@ import { Token, TokenMetadata, TokenWithDetails } from '@/app/types';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Record<string, string> }
+  { params }: { params: { wallet: string } }
 ): Promise<NextResponse> {
   try {
     const client = await clientPromise;
@@ -44,11 +44,11 @@ export async function GET(
           return {
             mint: token.mint,
             tokenName: tokenMetadata?.content?.metadata?.name ||
-                       tokenMetadata?.content?.json?.name ||
-                       'Unknown',
+              tokenMetadata?.content?.json?.name ||
+              'Unknown',
             tokenSymbol: tokenMetadata?.content?.metadata?.symbol ||
-                         tokenMetadata?.content?.json?.symbol ||
-                         '???',
+              tokenMetadata?.content?.json?.symbol ||
+              '???',
             balance: parseFloat((token.amount / Math.pow(10, token.decimals)).toFixed(2)),
             decimals: token.decimals
           };
