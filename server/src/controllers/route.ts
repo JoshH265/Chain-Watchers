@@ -2,7 +2,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import clientPromise from '@/lib/db';
 import { getWalletData, getTokenMetadata } from '../../../../lib/wallet-search-api';
-import { Token, TokenMetadata, TokenWithDetails } from '@/app/types';
+import { Token, TokenMetadata, TokenWithDetails } from '../../../client/src/types/types';
 
 // Mark this route as dynamic so we can use dynamic parameters synchronously.
 export const dynamic = 'force-dynamic';

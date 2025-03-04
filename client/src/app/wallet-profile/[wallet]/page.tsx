@@ -1,11 +1,11 @@
-// src/app/wallet-profile/[wallet]/page.tsx
 'use client'
 
+import React from 'react';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Copy } from 'lucide-react';
-import { getTokenMetadata, getWalletData } from '../../../lib/wallet-search-api';
-import { Token, TokenMetadata, TokenWithDetails, Wallet } from '@/app/types';
+import { getTokenMetadata, getWalletData } from '@/lib/api-client';
+import { Token, TokenMetadata, TokenWithDetails, Wallet } from '../../../types/types';
 
 const copyToClipboard = async (text: string): Promise<void> => {
     try {
@@ -28,7 +28,9 @@ export default function WalletProfile() {
         const fetchWalletData = async () => {
             try {
                 setIsLoading(true);
-                const response = await fetch(`/api/wallet-profile/${walletAddress}`);
+                
+                const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+                const response = await fetch(`${API_URL}/api/wallet-profile`);
 
                 if (!response.ok) {
                     throw new Error('Failed to fetch wallet data');
