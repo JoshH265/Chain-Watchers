@@ -1,4 +1,8 @@
 import { MongoClient } from 'mongodb';
+import dotenv from 'dotenv';
+
+// Ensure environment variables are loaded
+dotenv.config();
 
 const uri = process.env.MONGODB_URI || '';
 const options = {};
@@ -8,10 +12,11 @@ let clientPromise: Promise<MongoClient>;
 
 declare global {
   // eslint-disable-next-line no-var
-  var _mongoClientPromise: Promise<MongoClient>;}
+  var _mongoClientPromise: Promise<MongoClient>;
+}
 
 if (!uri) {
-  throw new Error('Please add your Mongo URI to .env.local');
+  throw new Error('Please add your Mongo URI to .env');
 }
 
 if (process.env.NODE_ENV === 'development') {

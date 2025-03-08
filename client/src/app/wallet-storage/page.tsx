@@ -25,7 +25,8 @@ const WalletStorage: React.FC = () => {
   // Fetches wallet list from the API
   const fetchWallets = async () => {
     try {
-      const response = await fetch('/api/wallet-storage');
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${API_URL}/api/wallet-storage`);
       if (!response.ok) {
         const errorData = await response.text();
         console.error('API Error Response:', errorData);
@@ -67,7 +68,8 @@ const WalletStorage: React.FC = () => {
   // Handles adding a new wallet to storage
   const handleAddWallet = async (formData: { wallet: string; name: string; tags: string }) => {
     try {
-      const response = await fetch('/api/wallet-storage', {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${API_URL}/api/wallet-storage`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -91,7 +93,8 @@ const WalletStorage: React.FC = () => {
     try {
       if (!editingWallet) return;
 
-      const response = await fetch(`/api/wallet-storage?id=${editingWallet._id}`, {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${API_URL}/api/wallet-storage?id=${editingWallet._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -114,7 +117,8 @@ const WalletStorage: React.FC = () => {
   // Handles wallet deletion
   const handleRemoveWallet = async (walletId: string) => {
     try {
-      const response = await fetch(`/api/wallet-storage?id=${walletId}`, {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${API_URL}/api/wallet-storage?id=${walletId}`, {
         method: 'DELETE',
       });
 
