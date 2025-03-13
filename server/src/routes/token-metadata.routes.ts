@@ -1,11 +1,11 @@
 import express, { Request, Response } from 'express';
-import { getTokenMetadata, getWalletData } from '../services/wallet-search-api';
+import { getTokenMetadata } from '../services/wallet-search-api';
 
 const router = express.Router();
 
-router.post('/token-metadata', async (req: Request, res: Response) => {
+router.post('/', async (req: Request, res: Response) => {
   try {
-    console.log('Token metadata request received:', req.body);
+    //console.log('Token metadata request received:', req.body);
     const mintAddresses = req.body.mintAddresses;
     
     if (!Array.isArray(mintAddresses)) {
@@ -20,18 +20,6 @@ router.post('/token-metadata', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error fetching token metadata:', error);
     res.status(500).json({ error: 'Failed to fetch token metadata' });
-  }
-});
-
-// Keep your other routes
-router.get('/:address', async (req: Request, res: Response) => {
-  try {
-    const address = req.params.address;
-    const result = await getWalletData(address);
-    res.json(result);
-  } catch (error) {
-    console.error('Error fetching wallet data:', error);
-    res.status(500).json({ error: 'Failed to fetch wallet data' });
   }
 });
 

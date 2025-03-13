@@ -1,4 +1,3 @@
-// server/src/routes/wallet-storage.routes.ts
 import express, { Request, Response } from 'express';
 import { 
   getStoredWallets, 

@@ -1,7 +1,7 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export async function getTokenMetadata(mintAddresses: string[]) {
-  const response = await fetch(`${API_URL}/api/token-metadata`, {
+  const response = await fetch(`${API_URL}/api/wallet-data/token-metadata`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -15,14 +15,13 @@ export async function getTokenMetadata(mintAddresses: string[]) {
   
   return response.json();
 }
-
+// In api-client.ts
 export async function getWalletData(address: string) {
-  // Change to use GET with path parameter instead of POST with body
   const response = await fetch(`${API_URL}/api/wallet-data/${address}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-    },
+    }
   });
   
   if (!response.ok) {

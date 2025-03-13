@@ -27,17 +27,18 @@ export default function WalletProfile() {
     useEffect(() => {
         const fetchWalletData = async () => {
             try {
-                setIsLoading(true);
-                
-                const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-                const response = await fetch(`${API_URL}/api/wallet-profile`);
-
-                if (!response.ok) {
-                    throw new Error('Failed to fetch wallet data');
-                }
-
-                const data = await response.json();
-                setWalletData(data);
+              setIsLoading(true);
+              
+              const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+              // Pass the wallet address as a query parameter
+              const response = await fetch(`${API_URL}/api/wallet-profile?address=${walletAddress}`);
+          
+              if (!response.ok) {
+                throw new Error('Failed to fetch wallet profile');
+              }
+          
+              const data = await response.json();
+              setWalletData(data);
 
                 const { solBalance, tokens: activeTokens } = await getWalletData(walletAddress);
 
