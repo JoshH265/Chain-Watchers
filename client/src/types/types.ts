@@ -6,7 +6,7 @@ tags: string;
 
 export interface Wallet {
     _id: string;
-    wallet: string;
+    address: string;
     name: string;
     tags: string;
 }
@@ -52,7 +52,7 @@ export interface TokenWithDetails {
 
 export interface Wallet {
     _id: string;
-    wallet: string;
+    address: string;
     name: string;
     tags: string;
 }

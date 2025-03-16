@@ -22,26 +22,26 @@ const WalletStorage: React.FC = () => {
       const data = await getStoredWallets();
       setWallets(data);
       
-      // Create an array of promises (collects all balances at once) to fetch SOL balances for all wallets in parallel
-      const balancePromises = data.map((wallet: Wallet) => 
-        getWalletData(wallet.wallet) // Calls API to get balance for each wallet
-          .then(({ solBalance }) => ({
-            wallet: wallet.wallet, // Store address for mapping
-            balance: parseFloat(solBalance.toFixed(2)) // Format to 2 decimal places
+      // Create an array of promises to fetch SOL balances for all wallets
+      const balancePromises = data.map((storedWallet: Wallet) => 
+        getWalletData(storedWallet.address) // Send blockchain address to API to get current balance
+          .then(({ solBalance }) => ({ // Extract ONLY solBalance property from the API via destructuring
+            walletAddress: storedWallet.address, // Save BLOCKCHAIN address for later matching with its balance
+            balance: parseFloat(solBalance.toFixed(2)) // Convert balance to number with 2 decimal places
           }))
           .catch(() => ({
-            wallet: wallet.wallet,
-            balance: 0 // Default to 0 if balance fetch fails
+            walletAddress: storedWallet.address, // Keep same address format even when error occurs
+            balance: 0 // Default to zero balance if API call fails
           }))
       );
 
-      // Wait for all balance fetch operations to complete simultaneously
+      // Wait for all balance fetch to complete 
       const balances = await Promise.all(balancePromises); 
       
-      // Convert array of balance objects to lookup object for efficient access
+      // Converts array of balance objects to lookup object
       const balanceObject = balances.reduce((acc, { wallet, balance }) => ({
         ...acc,
-        [wallet]: balance // Create key-value pairs of wallet address → balance
+        [wallet]: balance // Create key-value pairs of wallet address:balance
       }), {});
 
       // Update state with all balances at once
@@ -124,7 +124,7 @@ const WalletStorage: React.FC = () => {
               setEditingWallet(null); // Wipes any data that is being edited
             }} 
             initialData={editingWallet ? { // Pre-populate form with existing database data when editing
-              wallet: editingWallet.wallet,
+              wallet: editingWallet.address,
               name: editingWallet.name,
               tags: editingWallet.tags
             } : undefined} // used if there is no data to pre-populate
@@ -142,18 +142,18 @@ const WalletStorage: React.FC = () => {
                 {/* Wallet name with link to detailed profile */}
                 <div className="flex flex-row justify-between">
                 <Link
-                  href={`/wallet-profile/${wallet.wallet}`}
+                  href={`/wallet-profile/${wallet.address}`}
                   className="text-blue-500 hover:underline"
                 >
 
                   <p>{wallet.name}</p>
                 </Link>
                 <h2 className="text-l font-bold">
-                  Sol balance: {solBalances[wallet.wallet] || 'Loading...'} {/* Display balance from state or fallback */}
+                  Sol balance: {solBalances[wallet.address] || 'Loading...'} {/* Display balance or fallback */}
                 </h2>
                 </div>
                 {/* Wallet address display */}
-                <p className="font-mono break-all">{wallet.wallet}</p>
+                <p className="font-mono break-all">{wallet.address}</p>
                 <p className="text-sm text-gray-400 mt-4">Tags</p>
                 <div className="flex flex-row justify-between">
                   {/* Tags display */}
