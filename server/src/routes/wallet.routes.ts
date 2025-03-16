@@ -23,7 +23,6 @@ router.post('/token-metadata', async (req: Request, res: Response) => {
   }
 });
 
-// Keep your other routes
 router.get('/:address', async (req: Request, res: Response) => {
   try {
     const address = req.params.address;

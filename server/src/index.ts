@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// Mount the routes - each route should be mounted only once
+// Mount the routes
 app.use('/api/wallet-storage', walletStorageRoutes);
 app.use('/api/wallet-data', walletRoutes);
 app.use('/api/wallet-profile', walletProfileRoutes);

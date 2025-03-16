@@ -1,4 +1,16 @@
-// src/app/types.ts
+export interface WalletFormData {
+wallet: string;
+name: string;
+tags: string;
+}
+
+export interface Wallet {
+    _id: string;
+    wallet: string;
+    name: string;
+    tags: string;
+}
+
 export interface Token {
     mint: string;
     amount: number;

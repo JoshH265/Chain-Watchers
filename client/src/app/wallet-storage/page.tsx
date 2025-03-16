@@ -3,132 +3,97 @@
 import React, { useEffect, useState } from 'react';
 import AddWalletForm from '../../components/add-wallet-form';
 import Link from 'next/link';
-import {getWalletData} from '@/lib/api-client'; // Using path alias -- Testing 03/03/2025
-
-
-// Define the structure for wallet data
-interface Wallet {
-  _id: string; // Unique identifier for the wallet
-  wallet: string; // Wallet address
-  name: string; // User-defined name for the wallet
-  tags: string; // Comma-separated tags for categorization
-}
+import { Wallet } from '@/types/types'; // Import interfaces from centralized types file - testing 14/03
+import { getWalletData, getStoredWallets, addWalletToDatabase, updateWalletInDatabase, removeWalletFromDatabase } from '@/lib/api-client';
 
 // Main component for wallet management
 const WalletStorage: React.FC = () => {
+
   // State management for wallet list and UI controls
   const [wallets, setWallets] = useState<Wallet[]>([]); // Stores all wallets
   const [isAddingWallet, setIsAddingWallet] = useState(false); // Controls add/edit form visibility
   const [editingWallet, setEditingWallet] = useState<Wallet | null>(null); // Stores wallet being edited
-  const [solBalances, setSolBalances] = useState<{[key: string]: number}>({}); // Stores SOL balances for stored wallets
+  const [solBalances, setSolBalances] = useState<{[key: string]: number}>({}); // Maps wallet addresses to repsective SOL balance
 
-  // Fetches wallet list from the API
+  // Fetches wallet list 
   const fetchWallets = async () => {
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${API_URL}/api/wallet-storage`);
-      if (!response.ok) {
-        const errorData = await response.text();
-        console.error('API Error Response:', errorData);
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
+      // Get stored wallets from database
+      const data = await getStoredWallets();
       setWallets(data);
       
-      // Fetch all SOL balances in parallel
+      // Create an array of promises (collects all balances at once) to fetch SOL balances for all wallets in parallel
       const balancePromises = data.map((wallet: Wallet) => 
-        getWalletData(wallet.wallet)
+        getWalletData(wallet.wallet) // Calls API to get balance for each wallet
           .then(({ solBalance }) => ({
-            wallet: wallet.wallet,
-            balance: parseFloat(solBalance.toFixed(2))
+            wallet: wallet.wallet, // Store address for mapping
+            balance: parseFloat(solBalance.toFixed(2)) // Format to 2 decimal places
           }))
           .catch(() => ({
             wallet: wallet.wallet,
-            balance: 0
+            balance: 0 // Default to 0 if balance fetch fails
           }))
       );
 
-      const balances = await Promise.all(balancePromises); // Collects balances all at once instead of looping a for each
+      // Wait for all balance fetch operations to complete simultaneously
+      const balances = await Promise.all(balancePromises); 
+      
+      // Convert array of balance objects to lookup object for efficient access
       const balanceObject = balances.reduce((acc, { wallet, balance }) => ({
         ...acc,
-        [wallet]: balance
+        [wallet]: balance // Create key-value pairs of wallet address → balance
       }), {});
 
+      // Update state with all balances at once
       setSolBalances(balanceObject);
-    } catch (_error) {
-      console.error('Failed to fetch wallets:', _error);
+    } catch (error) {
+      console.error('Failed to fetch wallets:', error);
     }
   };
 
-  // Load wallets on component mounter
+  // Load wallets on component mount
   useEffect(() => {
     fetchWallets();
   }, []);
 
-  // Handles adding a new wallet to storage
   const handleAddWallet = async (formData: { wallet: string; name: string; tags: string }) => {
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${API_URL}/api/wallet-storage`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to add wallet');
-      }
-
-      fetchWallets();        // Refresh wallet list
-      setIsAddingWallet(false);  // Hide the form
-    } catch (_error) {
-      console.error('Error adding wallet:', _error);
+      // Send form data to API client
+      await addWalletToDatabase(formData);
+      fetchWallets();
+      
+      setIsAddingWallet(false); // Hides form after submission
+    } catch (error) {
+      console.error('Error adding wallet:', error);
     }
   };
 
-  // Handles updating an existing wallet
   const handleEditWallet = async (formData: { wallet: string; name: string; tags: string }) => {
     try {
+      // Check if there is a wallet being edited
       if (!editingWallet) return;
-
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${API_URL}/api/wallet-storage?id=${editingWallet._id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to edit wallet');
-      }
-
-      fetchWallets(); // Refresh wallet list
-      setEditingWallet(null); // Clear editing state
-      setIsAddingWallet(false); // Hide the form
-    } catch (_error) {
-      console.error('Error editing wallet:', _error);
+      
+      // Call API client to update wallet
+      await updateWalletInDatabase(editingWallet._id, formData);
+      fetchWallets();
+      
+      // After wallet update submission
+      setEditingWallet(null); // Set editing wallet to null
+      setIsAddingWallet(false); // Hide form
+    } catch (error) {
+      console.error('Error editing wallet:', error);
+      // Could add user-facing error notification here
     }
   };
 
-  // Handles wallet deletion
   const handleRemoveWallet = async (walletId: string) => {
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${API_URL}/api/wallet-storage?id=${walletId}`, {
-        method: 'DELETE',
-      });
+      // Call API client to remove wallet
+      await removeWalletFromDatabase(walletId);
+      fetchWallets();
 
-      if (!response.ok) {
-        throw new Error('Failed to remove wallet');
-      }
-
-      fetchWallets();  // Refresh wallet list
-    } catch (_error) {
-      console.error('Error removing wallet:', _error);
+    } catch (error) {
+      console.error('Error removing wallet:', error);
     }
   };
 
@@ -150,19 +115,19 @@ const WalletStorage: React.FC = () => {
           </button>
         </div>
 
-        {/* Conditional render of the add/edit wallet form */}
+        {/* Conditional for wallet form based on isAddingWallet state */}
         {isAddingWallet && (
           <AddWalletForm 
-            onSubmit={editingWallet ? handleEditWallet : handleAddWallet} 
+            onSubmit={editingWallet ? handleEditWallet : handleAddWallet} // Choose handler based on mode Editing vs Adding
             onCancel={() => {
-              setIsAddingWallet(false);
-              setEditingWallet(null);
+              setIsAddingWallet(false); // Hide form when cancelled (reverses the conditional)
+              setEditingWallet(null); // Wipes any data that is being edited
             }} 
-            initialData={editingWallet ? {
+            initialData={editingWallet ? { // Pre-populate form with existing database data when editing
               wallet: editingWallet.wallet,
               name: editingWallet.name,
               tags: editingWallet.tags
-            } : undefined}
+            } : undefined} // used if there is no data to pre-populate
           />
         )}
 
@@ -184,7 +149,7 @@ const WalletStorage: React.FC = () => {
                   <p>{wallet.name}</p>
                 </Link>
                 <h2 className="text-l font-bold">
-                  Sol balance: {solBalances[wallet.wallet] || 'Loading...'}
+                  Sol balance: {solBalances[wallet.wallet] || 'Loading...'} {/* Display balance from state or fallback */}
                 </h2>
                 </div>
                 {/* Wallet address display */}

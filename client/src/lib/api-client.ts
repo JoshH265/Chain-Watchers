@@ -1,12 +1,18 @@
+//JSDoc annoations recommended to be utilised by Claude 3.7 Sonnet
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
+/**
+ * Fetches metadata for multiple tokens by their mint addresses
+ * @param mintAddresses Array of token mint addresses to fetch metadata for
+ * @returns Promise with token metadata information
+ */
 export async function getTokenMetadata(mintAddresses: string[]) {
   const response = await fetch(`${API_URL}/api/wallet-data/token-metadata`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ mintAddresses }),
+    body: JSON.stringify({ mintAddresses }), // Send mint addresses in request body
   });
   
   if (!response.ok) {
@@ -15,7 +21,12 @@ export async function getTokenMetadata(mintAddresses: string[]) {
   
   return response.json();
 }
-// In api-client.ts
+
+/**
+ * Retrieves balance and token data for a specific wallet address
+ * @param address Blockchain wallet address to query
+ * @returns Promise with wallet balance and token holdings
+ */
 export async function getWalletData(address: string) {
   const response = await fetch(`${API_URL}/api/wallet-data/${address}`, {
     method: 'GET',
@@ -31,6 +42,10 @@ export async function getWalletData(address: string) {
   return response.json();
 }
 
+/**
+ * Gets all wallets saved in the storage system
+ * @returns Promise with array of stored wallet objects
+ */
 export async function getStoredWallets() {
   const response = await fetch(`${API_URL}/api/wallet-storage`);
   
@@ -41,7 +56,12 @@ export async function getStoredWallets() {
   return response.json();
 }
 
-export async function addWalletToStorage(data: { address: string, label?: string, tags?: string[] }) {
+/**
+ * Adds a new wallet to the storage system
+ * @param data Object containing wallet address, optional label and tags
+ * @returns Promise with the newly created wallet record
+ */
+export async function addWalletToDatabase(data: { wallet: string; name: string; tags: string }) {
   const response = await fetch(`${API_URL}/api/wallet-storage`, {
     method: 'POST',
     headers: {
@@ -51,20 +71,46 @@ export async function addWalletToStorage(data: { address: string, label?: string
   });
   
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Failed to add wallet to storage');
+    throw new Error('Failed to add wallet');
   }
   
   return response.json();
 }
 
-export async function removeWalletFromStorage(address: string) {
-  const response = await fetch(`${API_URL}/api/wallet-storage/${address}`, {
+/**
+ * Removes a wallet from the storage system
+ * @param id ID of the wallet to be deleted
+ * @returns Promise with deletion confirmation
+ */
+export async function removeWalletFromDatabase(id: string) {
+  const response = await fetch(`${API_URL}/api/wallet-storage?id=${id}`, {
     method: 'DELETE',
   });
   
   if (!response.ok) {
-    throw new Error('Failed to remove wallet from storage');
+    throw new Error('Failed to remove wallet');
+  }
+  
+  return response.json();
+}
+
+/**
+ * Updates an existing wallet in the storage system
+ * @param id ID of the wallet to update
+ * @param data Updated wallet information
+ * @returns Promise with the updated wallet record
+ */
+export async function updateWalletInDatabase(id: string, data: { wallet: string; name: string; tags: string }) {
+  const response = await fetch(`${API_URL}/api/wallet-storage?id=${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to update wallet');
   }
   
   return response.json();
