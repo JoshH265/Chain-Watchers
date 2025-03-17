@@ -18,8 +18,8 @@ export const getWalletData = async (walletAddress: string) => {
   // First, try to get wallet data from the database
   const cachedWallet = await getWalletByAddress(walletAddress);
   
-  // If data exists and is recent (less than 10 minutes old), return it
-  const TEN_MINUTES = 10 * 60 * 1000;
+  // If data is cached - return
+  const TEN_MINUTES = 10 * 60 * 1000; // Short term caching developed with assistance from Claude 3.7 Sonnet
   if (cachedWallet && (new Date().getTime() - cachedWallet.lastUpdated.getTime() < TEN_MINUTES)) {
     console.log('Returning cached wallet data for:', walletAddress);
     return {

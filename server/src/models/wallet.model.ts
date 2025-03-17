@@ -10,13 +10,13 @@ export async function saveWalletData(data: {
   tokens: any[];
 }): Promise<Wallet> {
   const client = await clientPromise;
-  const db = client.db();
+  const db = client.db("cached_tokens"); // Specify the database name here
   
-  // Process tokens to match our model format
+  // Process tokens to save
   const processedTokens = data.tokens.map(token => ({
     mint: token.mint,
     tokenName: token.tokenName || 'Unknown',
-    tokenSymbol: token.tokenSymbol || '???',
+    tokenSymbol: token.tokenSymbol || '?',
     balance: token.amount / Math.pow(10, token.decimals),
     decimals: token.decimals
   }));
@@ -28,11 +28,11 @@ export async function saveWalletData(data: {
     lastUpdated: new Date()
   };
   
-  // Update or insert the wallet document
-  await db.collection('wallets').updateOne(
-    { address: data.address },
-    { $set: wallet },
-    { upsert: true }
+  // Update or create the blockchain_data document
+  await db.collection('blockchain_data').updateOne(
+    { address: data.address }, // search for matching wallet to what is being processed
+    { $set: wallet }, // instructions to update field with new values FROM newly created wallet object above
+    { upsert: true } // updates/inserts the document if it does or doesnt exist
   );
   
   return wallet;
@@ -43,7 +43,7 @@ export async function saveWalletData(data: {
  */
 export async function getWalletByAddress(address: string): Promise<Wallet | null> {
   const client = await clientPromise;
-  const db = client.db();
+  const db = client.db("cached_tokens");
   
-  return await db.collection('wallets').findOne<Wallet>({ address });
+  return await db.collection('blockchain_data').findOne<Wallet>({ address });
 }
