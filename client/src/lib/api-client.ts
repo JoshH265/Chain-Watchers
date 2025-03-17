@@ -1,5 +1,5 @@
 //JSDoc annoations recommended to be utilised by Claude 3.7 Sonnet
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 /**
  * Fetches metadata for multiple tokens by their mint addresses

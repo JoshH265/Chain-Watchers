@@ -114,9 +114,9 @@ export default function WalletProfile() {
                 <div className="rounded-lg text-white">
                     {/* Wallet Address Section */}
                     <div className="flex items-center space-x-2">
-                        <p className="font-mono break-all font-semibold text-black">{walletData.address}</p>
+                        <p className="font-mono break-all font-semibold text-black">{walletData.wallet}</p>
                         <button
-                            onClick={() => copyToClipboard(walletData.address)}
+                            onClick={() => copyToClipboard(walletData.wallet)}
                             className="hover:bg-gray-700 rounded-full transition-colors"
                             title="Copy wallet address"
                             type="button"

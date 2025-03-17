@@ -1,19 +1,5 @@
 import clientPromise from '../lib/db';
-
-export interface Token {
-  mint: string;
-  tokenName: string;
-  tokenSymbol: string;
-  balance: number;
-  decimals: number;
-}
-
-export interface Wallet {
-  address: string;
-  solBalance: number;
-  tokens: Token[];
-  lastUpdated: Date;
-}
+import { Token, Wallet } from '../types/wallet.types';
 
 /**
  * Save wallet data to the database
