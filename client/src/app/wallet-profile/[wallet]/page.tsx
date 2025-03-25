@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 import { Copy } from 'lucide-react';
 import { getTokenMetadata, getWalletData } from '@/lib/api-client';
 import { Token, TokenMetadata, TokenWithDetails, Wallet } from '../../../types/types';
+import WalletTabs, { TabContent } from '@/components/wallet-tabs';
+import TransactionHistory from '@/components/transaction-history';
 
 const copyToClipboard = async (text: string): Promise<void> => {
     try {
@@ -104,64 +106,90 @@ export default function WalletProfile() {
         );
     }
 
+    // Token Holdings Component (extracted for clarity)
+    const TokenHoldings = () => (
+        <div className="mt-8 w-full max-w-2xl rounded shadow">
+            {tokens.length > 0 ? (
+                <ul>
+                    {tokens.map((token) => (
+                        <li key={token.mint} className="mb-4 p-4 rounded-lg bg-gray-500 border border-black-400">
+                            <div><strong>Token:</strong> {token.tokenName} ({token.tokenSymbol})</div>
+                            {token.balance > 1 && (
+                                <div><strong>Balance:</strong> {token.balance}</div>
+                            )}
+                            <div className="text-sm text-white"><strong>Address:</strong> {token.mint}</div>
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <p className="text-white p-4">No tokens found for this wallet.</p>
+            )}
+        </div>
+    );
+
     return (
         <div className="min-h-screen bg-gray-700 p-8">
-            <div className="max-w-4xl mx-auto bg-gray-500 p-5 rounded-lg">
-                {/* Wallet Name Section */}
-                <h1 className="text-3xl font-bold text-black mb">
-                    {walletData.name}
-                </h1>
-                <div className="rounded-lg text-white">
-                    {/* Wallet Address Section */}
-                    <div className="flex items-center space-x-2">
-                        <p className="font-mono break-all font-semibold text-black">{walletData.wallet}</p>
-                        <button
-                            onClick={() => copyToClipboard(walletData.wallet)}
-                            className="hover:bg-gray-700 rounded-full transition-colors"
-                            title="Copy wallet address"
-                            type="button"
-                        >
-                            <Copy size={16} className="text-white" />
-                        </button>
+            <div className="max-w-4xl mx-auto">
+                {/* Wallet Info Card */}
+                <div className="bg-gray-500 p-5 rounded-lg mb-6">
+                    {/* Wallet Name Section */}
+                    <h1 className="text-3xl font-bold text-black mb-2">
+                        {walletData.name}
+                    </h1>
+                    <div className="rounded-lg text-white">
+                        {/* Wallet Address Section */}
+                        <div className="flex items-center space-x-2">
+                            <p className="font-mono break-all font-semibold text-black">{walletData.wallet}</p>
+                            <button
+                                onClick={() => copyToClipboard(walletData.wallet)}
+                                className="hover:bg-gray-700 rounded-full transition-colors"
+                                title="Copy wallet address"
+                                type="button"
+                            >
+                                <Copy size={16} className="text-white" />
+                            </button>
+                        </div>
+                        {/* Tags Section */}
+                        <div className="flex flex-row space-x-2 mt-2">
+                            {(walletData.tags || '').split(',')
+                                .filter(tag => tag.trim())
+                                .map((tag, index) => (
+                                    <span
+                                        key={index}
+                                        className="bg-gray-700 px-2 py-1 rounded-full text-sm"
+                                    >
+                                        {tag.trim()}
+                                    </span>
+                                ))}
+                        </div>
                     </div>
-                    {/* Tags Section */}
-                    <div className="flex flex-row space-x-2 mt-2">
-                        {(walletData.tags || '').split(',')
-                            .filter(tag => tag.trim())
-                            .map((tag, index) => (
-                                <span
-                                    key={index}
-                                    className="bg-gray-700 px-2 py-1 rounded-full text-sm"
-                                >
-                                    {tag.trim()}
-                                </span>
-                            ))}
-                    </div>
+                    {/* SOL Balance Section */}
+                    {solBalance !== null && (
+                        <div className="w-full max-w-2xl pt-4">
+                            <h2 className="text-l font-bold">Sol balance: {solBalance}</h2>
+                        </div>
+                    )}
                 </div>
-                {/* SOL Balance Section */}
-                {solBalance !== null && (
-                    <div className="mt8 w-full max-w-2xl pt-4">
-                        <h2 className="text-l font-bold">Sol balance: {solBalance}</h2>
-                    </div>
-                )}
-            </div>
-            {/* Tokens Section */}
-            <div className="max-w-4xl mx-auto p-5 rounded-lg">
-                {tokens.length > 0 && (
-                    <div className="mt-8 w-full max-w-2xl rounded shadow">
-                        <ul>
-                            {tokens.map((token) => (
-                                <li key={token.mint} className="mb-4 p-4 rounded-lg bg-gray-500 border border-black-400">
-                                    <div><strong>Token:</strong> {token.tokenName} ({token.tokenSymbol})</div>
-                                    {token.balance > 1 && (
-                                        <div><strong>Balance:</strong> {token.balance}</div>
-                                    )}
-                                    <div className="text-sm text-white"><strong>Address:</strong> {token.mint}</div>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
+
+                {/* Tabbed Interface Section */}
+                <div className="bg-gray-500 p-5 rounded-lg">
+                    <WalletTabs defaultTab="transactions">
+                        <TabContent tab="holdings">
+                            <h2 className="text-xl font-bold mb-4">Current Holdings</h2>
+                            <TokenHoldings />
+                        </TabContent>
+                        
+                        <TabContent tab="transactions">
+                            <h2 className="text-xl font-bold mb-4">Transaction History</h2>
+                            <TransactionHistory walletAddress={walletAddress} />
+                        </TabContent>
+                        
+                        <TabContent tab="profitLoss">
+                            <h2 className="text-xl font-bold mb-4">Profit and Loss</h2>
+                            <p className="text-white">Profit and loss tracking coming soon.</p>
+                        </TabContent>
+                    </WalletTabs>
+                </div>
             </div>
         </div>
     );

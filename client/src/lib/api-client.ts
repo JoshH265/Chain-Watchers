@@ -115,3 +115,45 @@ export async function updateWalletInDatabase(id: string, data: { wallet: string;
   
   return response.json();
 }
+
+import { TransactionHistoryResponse } from '../../../shared/src/types/transaction.types';
+
+
+/**
+ * Fetch transaction history for a wallet
+ */
+export async function getTransactionHistory(
+  walletAddress: string,
+  options: {
+    limit?: number;
+    before?: string;
+    after?: string;
+    cursor?: string;
+  } = {}
+): Promise<TransactionHistoryResponse> {
+  try {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
+    
+    // Build query parameters
+    const queryParams = new URLSearchParams();
+    if (options.limit) queryParams.append('limit', options.limit.toString());
+    if (options.before) queryParams.append('before', options.before);
+    if (options.after) queryParams.append('after', options.after);
+    if (options.cursor) queryParams.append('cursor', options.cursor);
+    
+    const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+    
+    const response = await fetch(
+      `${API_URL}/api/transaction-history/transactions/${walletAddress}${queryString}`
+    );
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch transaction history');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching transaction history:', error);
+    throw error;
+  }
+}
