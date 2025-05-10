@@ -1,9 +1,7 @@
 import { Request, Response } from 'express';
 import { getWalletTransactionHistory } from '../services/transaction-history-service';
 
-/**
- * Get transaction history for a wallet
- */
+
 export async function getTransactionHistory(req: Request, res: Response) {
   try {
     const { address } = req.params;

@@ -111,7 +111,7 @@ export async function getWalletTransactionHistory(
     return {
       transactions: FinalisedTransactions,
       cursor: nextCursor
-    };
+    }
   } catch (error) {
     // Comprehensive error handling with detailed logging
     console.error('Error fetching transaction history:', error);
@@ -355,27 +355,30 @@ function determineTransactionType(transaction: any): TransactionType {
  * Extract a token symbol from mint address using Helius's getAsset method
  */
 async function extractTokenSymbol(mint: string, heliusClient: any): Promise<string> {
-  // Handle known tokens without API call for efficiency
+  // Handle known tokens without needing to break down response data for efficiency
   if (mint === 'So11111111111111111111111111111111111111112') {
     return 'SOL';
   }
   
   try {
-    // Call Helius API to get the asset data
+    // Call getAsset endpoint for token metadata
+    // https://www.helius.dev/docs/api-reference/das/getasset#getasset 
     const response = await heliusClient.rpc.getAsset({
       id: mint
     });
     
-    // Extract symbol from response
+    // Checck each property in response to find symbol and ensure it exists
+    // Cant just check final - runtime error
     if (response && response.content && response.content.metadata && response.content.metadata.symbol) {
+      // return symbol and add $ prefix for consistency
       return "$" + response.content.metadata.symbol;
     }
     
-    // Fallback if no symbol is found
+    // Fallback if cant find, use shorthand of address
     return mint.substring(0, 4) + '...';
   } catch (error) {
     console.error(`Error fetching token symbol for ${mint}:`, error);
-    // Fallback to shortened address on error
+    // Fallback of try catch block
     return mint.substring(0, 4) + '...';
   }
 }
