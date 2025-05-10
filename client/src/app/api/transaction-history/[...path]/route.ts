@@ -67,3 +67,4 @@ export async function POST(request: NextRequest, { params }: { params: { path: s
     return NextResponse.json({ error: 'Failed to fetch data from API' }, { status: 500 });
   }
 }
+

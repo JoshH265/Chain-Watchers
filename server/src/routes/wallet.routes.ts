@@ -1,44 +1,36 @@
-// Import necessary modules and functions
-import express, { Request, Response } from 'express';
-import { getTokenMetadata, getWalletData } from '../services/wallet-search-api';
+import express, { Request, Response } from 'express'; 
+import { getTokenMetadata, getWalletdata } from '../services/wallet-search-service';
 
-const router = express.Router();
+const router = express.Router(); // Express router for endpoints
 
-// POST /token-metadata: Retrieves token metadata for provided mint addresses.
-router.post('/token-metadata', async (req: Request, res: Response) => {
+// https://docs.helius.xyz/
+// Claude 3.7 sonnet
+// https://expressjs.com/en/5x/api.html#express.router
+router.post('/token-metadata', async (req: Request, res: Response) => { // Define POST endpoint for batch token metadata retrieval
   try {
-    // Log incoming request data
-    console.log('Token metadata request received:', req.body);
-    const mintAddresses = req.body.mintAddresses;
+    const mintAddresses = req.body.mintAddresses; // Extract token addresses from request body
     
-    // Validate input format
-    if (!Array.isArray(mintAddresses)) {
-      console.log('Invalid mintAddresses format:', mintAddresses);
-      return res.status(400).json({ error: 'mintAddresses must be an array' });
+    // 
+    if (!Array.isArray(mintAddresses)) { // Checks data type of mintAddresses - must be an array
+      return res.status(400).json({ error: 'mintAddresses must be an array' }); 
     }
-    
-    // Log number of tokens to fetch
-    console.log('Fetching metadata for', mintAddresses.length, 'tokens');
-    const result = await getTokenMetadata(mintAddresses);
-    // Log result status
-    console.log('Metadata fetch result:', result ? 'Success' : 'Empty result');
+    // Fetch token metadata using wallet-search-service
+    const result = await getTokenMetadata(mintAddresses); // Call function to fetch data from Helius
     res.json(result);
   } catch (error) {
-    console.error('Error fetching token metadata:', error);
-    res.status(500).json({ error: 'Failed to fetch token metadata' });
+    console.error('Error fetching token metadata:', error); // backend error logging
+    res.status(500).json({ error: 'Failed to fetch token metadata' }); // HTTP error response
   }
 });
 
-// Route to fetch wallet data by address
-router.get('/:address', async (req: Request, res: Response) => {
-  try {
-    // Extract wallet address from URL params
-    const address = req.params.address;
-    const result = await getWalletData(address);
-    res.json(result);
+router.get('/:address', async (req: Request, res: Response) => { // Define GET endpoint with dynamic param 
+  try {// /:address dynamic param is based on wallet address
+    const address = req.params.address; 
+    const result = await getWalletdata(address); 
+    res.json(result); 
   } catch (error) {
-    console.error('Error fetching wallet data:', error);
-    res.status(500).json({ error: 'Failed to fetch wallet data' });
+    console.error('Error fetching wallet data:', error); 
+    res.status(500).json({ error: 'Failed to fetch wallet data' }); 
   }
 });
 

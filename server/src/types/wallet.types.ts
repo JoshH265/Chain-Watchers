@@ -24,7 +24,6 @@ export interface TokenInfo {
 export interface Transaction {
   signature: string;
   timestamp: string;
-  fee: number;
   type: TransactionType;
   tokenTransfers: TokenTransfer[];
   fromToken?: TokenInfo;  // Use the TokenInfo interface
@@ -36,4 +35,14 @@ export interface Transaction {
 export interface TransactionHistoryResponse {
   transactions: Transaction[];
   cursor?: string;
+}
+
+export interface WalletBalanceResponse {
+  nativeBalance: number;
+  tokens: Array<{
+    mint: string;
+    amount: number;
+    decimals: number;
+    // Add other properties as needed
+  }>;
 }

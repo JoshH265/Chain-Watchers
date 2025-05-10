@@ -23,7 +23,6 @@ export interface TokenInfo {
 export interface Transaction {
   signature: string; // Signature of transaction
   timestamp: string; // Time of transaction
-  fee: number; // Fee of transaction (what wallet paid to make the transaction)
   type: TransactionType; // line 2 reference
   tokenTransfers: TokenTransfer[]; // line 5 reference - movement of tokens in transaction
 
@@ -31,6 +30,7 @@ export interface Transaction {
   fromToken?: TokenInfo; 
   toToken?: TokenInfo;
 
+  valueUSD?: number | null;  // Testing for getting the USD value of transactions
   // Not currently needed but can be used for tracking sol balance changes per transactions
   // solChange?: number;
   // solDirection?: TransferDirection;

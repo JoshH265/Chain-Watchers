@@ -4,8 +4,8 @@ import dotenv from 'dotenv';
 import walletRoutes from './routes/wallet.routes';
 import walletStorageRoutes from './routes/wallet-storage.routes';
 import walletProfileRoutes from './routes/wallet-profile.routes';
-import tokenMetadataRoutes from './routes/token-metadata.routes';
 import transactionHistoryRoutes from './routes/transaction-history.routes';
+import cryptoPriceRoutes from './routes/crypto-price.routes';
 
 dotenv.config();
 
@@ -19,8 +19,8 @@ app.use(express.json());
 app.use('/api/wallet-storage', walletStorageRoutes);
 app.use('/api/wallet-data', walletRoutes);
 app.use('/api/wallet-profile', walletProfileRoutes);
-app.use('/api/token-metadata', tokenMetadataRoutes);
 app.use('/api/transaction-history', transactionHistoryRoutes);
+app.use('/api/crypto-price', cryptoPriceRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

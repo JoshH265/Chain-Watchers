@@ -4,7 +4,9 @@ import React, { useEffect, useState } from 'react';
 import AddWalletForm from '../../components/add-wallet-form';
 import Link from 'next/link';
 import { Wallet } from '@/types/types'; // Import interfaces from centralized types file - testing 14/03
-import { getWalletData, getStoredWallets, addWalletToDatabase, updateWalletInDatabase, removeWalletFromDatabase } from '@/lib/api-client';
+import { getWalletdata, getStoredWallets, addWalletToDatabase, updateWalletInDatabase, removeWalletFromDatabase } from '@/lib/api-client';
+import { Copy, Check  } from 'lucide-react';
+
 
 // Main component for wallet management
 const WalletStorage: React.FC = () => {
@@ -14,6 +16,8 @@ const WalletStorage: React.FC = () => {
   const [isAddingWallet, setIsAddingWallet] = useState(false); // Controls add/edit form visibility
   const [editingWallet, setEditingWallet] = useState<Wallet | null>(null); // Stores wallet being edited
   const [solBalances, setSolBalances] = useState<{[key: string]: number}>({}); // Maps wallet addresses to repsective SOL balance
+  const [copiedWallet, setCopiedWallet] = useState<string | null>(null);
+
 
   // Fetches wallet list 
   const fetchWallets = async () => {
@@ -24,14 +28,24 @@ const WalletStorage: React.FC = () => {
       
       // Create an array of promises to fetch SOL balances for all wallets
       const balancePromises = data.map((wallet: Wallet) => 
-        getWalletData(wallet.wallet) // Send blockchain address to API to get current balance
-          .then(({ solBalance }) => ({ // Extract ONLY solBalance property from the API via destructuring
-            wallet: wallet.wallet, // Save BLOCKCHAIN address for later matching with its balance
-            balance: parseFloat(solBalance.toFixed(2)) // Convert balance to number with 2 decimal places
-          }))
+        getWalletdata(wallet.wallet) // Send blockchain address to API to get current balance
+          .then(({ solBalance }) => {
+        const balance = parseFloat(solBalance.toFixed(2)); // Convert balance to number with 2 decimal places
+        // Set balance to 0 if it's less than the threshold (e.g., 0.01)
+        return {
+          wallet: wallet.wallet, // Save BLOCKCHAIN address for later matching with its balance
+            balance: (() => {
+            if (balance < 0.01) {
+              return 0;
+            } else {
+              return balance;
+            }
+            })()
+        };
+          })
           .catch(() => ({
-            walletAddress: wallet.wallet, // Keep same address format even when error occurs
-            balance: 0 // Default to zero balance if API call fails
+        wallet: wallet.wallet, // Keep same address format even when error occurs
+        balance: 0 // Default to zero balance if API call fails
           }))
       );
 
@@ -97,6 +111,20 @@ const WalletStorage: React.FC = () => {
     }
   };
 
+  const copyToClipboard = async (text: string): Promise<void> => {
+    try {
+        await navigator.clipboard.writeText(text);
+        // Show copy feedback
+        setCopiedWallet(text);
+        // Hide copy feedback after 2 seconds
+        setTimeout(() => {
+          setCopiedWallet(null);
+        }, 2000);
+    } catch (err) {
+        console.error('Failed to copy text: ', err);
+    }
+};
+
   return (
     // Main container with dark theme
     <div className="min-h-screen bg-gray-700 p-8">
@@ -149,12 +177,40 @@ const WalletStorage: React.FC = () => {
                   <p>{wallet.name}</p>
                 </Link>
                 <h2 className="text-l font-bold">
-                  Sol balance: {solBalances[wallet.wallet] || 'Loading...'} {/* Display balance or fallback */}
+                  Sol balance: {solBalances[wallet.wallet]}
                 </h2>
                 </div>
                 {/* Wallet address display */}
-                <p className="font-mono break-all">{wallet.wallet}</p>
-                <p className="text-sm text-gray-400 mt-4">Tags</p>
+                <div className="rounded-lg text-white mt-4">
+                    {/* Clickable Wallet Address Section */}
+                    <button
+                        onClick={() => copyToClipboard(wallet.wallet)}
+                        className="flex hover:bg-gray-700 transition-colors duration-300 p-2 rounded cursor-pointer group relative"
+                        title="Click to copy wallet address"
+                        type="button"
+                    >
+                        <div className="flex w-full items-center">
+                            <p className="font-mono break-all font-semibold text-white">{wallet.wallet}</p>
+                            <div className="transition-transform duration-300 ml-1 flex-shrink-0">
+                              {/* check wallet clicked so animation does not occur on all wallets */}
+                            {copiedWallet === wallet.wallet ? (
+                                    <Check size={16} className="text-white" />
+                                ) : (
+                                    <Copy size={16} className="text-white group-hover:scale-110" />
+                                )}
+                            </div>
+                        </div>
+                        
+                        {/* Copy feedback animation */}
+                        <span 
+                            className={`absolute right-0 -top-8 bg-gray-800 text-white px-2 py-1 rounded text-sm transition-opacity duration-300 ${
+                              copiedWallet === wallet.wallet ? 'opacity-100' : 'opacity-0'
+                            }`}
+                        >
+                            Copied
+                        </span>
+                    </button>
+                </div>                <p className="text-sm text-gray-400 mt-4">Tags</p>
                 <div className="flex flex-row justify-between">
                   {/* Tags display */}
                   <div className="flex flex-row space-x-2">

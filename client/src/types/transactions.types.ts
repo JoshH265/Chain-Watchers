@@ -24,11 +24,11 @@ export interface TokenInfo {
 export interface Transaction {
   signature: string;
   timestamp: string;
-  fee: number;
   type: TransactionType;
   tokenTransfers: TokenTransfer[];
   fromToken?: TokenInfo;  // Use the TokenInfo interface
   toToken?: TokenInfo;    // Use the TokenInfo interface
+  valueUSD?: number | null;  // Testing for getting the USD value of transactions
   solChange?: number;
   solDirection?: TransferDirection;
 }

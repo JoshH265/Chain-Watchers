@@ -29,11 +29,39 @@ export interface Transaction {
   tokenTransfers: TokenTransfer[];
   fromToken?: TokenInfo;  // Use the TokenInfo interface
   toToken?: TokenInfo;    // Use the TokenInfo interface
+  valueUSD?: number | null;  // Testing for getting the USD value of transactions
   solChange?: number;
   solDirection?: TransferDirection;
+}
+
+// New interface for the options parameter
+export interface TransactionHistoryOptions {
+  limit?: number;           
+  before?: string;          
+  after?: string;           
+  cursor?: string;          
+  minSolAmount?: number;    
+  minTokenAmount?: number; 
 }
 
 export interface TransactionHistoryResponse {
   transactions: Transaction[];
   cursor?: string;
+}
+
+export interface WalletToken {
+  mint: string;
+  balance: number; 
+  decimals: number;
+  tokenName: string;
+  tokenSymbol: string;
+}
+
+export interface TokenMetadata {
+  // Add properties based on your existing type
+}
+
+export interface HeliusMetadataResponse {
+  result: TokenMetadata[];
+  // Add other properties as needed
 }

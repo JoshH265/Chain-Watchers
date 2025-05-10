@@ -56,3 +56,12 @@ export interface Wallet {
     name: string;
     tags: string;
 }
+
+export interface TokenPriceData {
+    address: string;
+    price: number;
+    priceChange24h?: number;
+    marketCap?: number;
+    volume24h?: number;
+    symbol?: string;
+  }

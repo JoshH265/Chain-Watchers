@@ -40,8 +40,20 @@ export const getStoredWallets = async () => {
  * Creates a new wallet record in the database
  * @param data Object containing wallet address, name and tags
  * @returns The created wallet document with its new ID
+ * @throws Error if wallet already exists in the database
  */
 export async function addStoredWallet(data: { wallet: string; name: string; tags: string }): Promise<StoredWallet> {
+  const collection = await getWalletCollection();
+  
+  // First check if wallet already exists in database (case insensitive)
+  const existingWallet = await collection.findOne({
+    wallet: { $regex: new RegExp(`^${data.wallet}$`, 'i') }
+  });
+  
+  if (existingWallet) {
+    throw new Error('Wallet already exists in database');
+  }
+  
   // Prepare wallet document from input data
   const storedWallet: StoredWallet = {
     wallet: data.wallet,
@@ -49,7 +61,6 @@ export async function addStoredWallet(data: { wallet: string; name: string; tags
     tags: data.tags
   };
   
-  const collection = await getWalletCollection();
   const result = await collection.insertOne(storedWallet);  // Insert document
   
   // Return the created wallet with its generated ID
