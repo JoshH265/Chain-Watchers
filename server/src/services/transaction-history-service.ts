@@ -141,13 +141,14 @@ async function processTransactions(
 ): Promise<Transaction[]> {
   // Fetch current SOL price for USD value calculations
   const solPriceUSD = await solPriceService.getCurrentSolPrice();
-  
+  console.log(`Current SOL price: $${solPriceUSD}`);
+
   console.log(`Processing ${transactions.length} raw transactions with filters: minSol=${options.minSolAmount}, minToken=${options.minTokenAmount}`);
   let filteredCount = 0;
   
   const processedTransactions: Transaction[] = [];
   
-  // Process each transaction individually
+  // Process each transaction individually to extract data and filter
   for (const tx of transactions) {
     try {
       // Validate transaction has required data
@@ -160,35 +161,36 @@ async function processTransactions(
       const tokenTransfers: TokenTransfer[] = [];
       let includeTransaction = false;
       
-      // Track incoming/outgoing transfers separately to identify swap pairs
+      // Track incoming/outgoing transfers to identify swap pairs
       const incomingTransfers: any[] = [];
       const outgoingTransfers: any[] = [];
       
-      // SECTION 1: PROCESS TOKEN TRANSFERS (NON-SOL TOKENS)
+      // Checks for transfer array in transactino 
       if (tx.tokenTransfers && Array.isArray(tx.tokenTransfers)) {
-        for (const transfer of tx.tokenTransfers) {
+        for (const transfer of tx.tokenTransfers) { 
+          // Check if valid transfer and skip if not 
           if (!transfer.fromUserAccount || !transfer.toUserAccount) continue;
           
-          // Determine transfer direction relative to user's wallet
+          // Check wallet address of in/outgoing transfers
           const isIncoming = transfer.toUserAccount === walletAddress;
           const isOutgoing = transfer.fromUserAccount === walletAddress;
           
-          if (!isIncoming && !isOutgoing) continue; // Skip irrelevant transfers
+          if (!isIncoming && !isOutgoing) continue; // Skip transfers not relevent
           
-          // Convert raw token amount to actual amount using token decimals
+          // Convert raw token amount to readable format
           const decimals = transfer.decimals || 0;
           const actualAmount = transfer.tokenAmount / Math.pow(10, decimals);
           
-          // Filter out dust transactions
+          // Filter out dust transactions based on min amount set
           if (actualAmount < options.minTokenAmount) continue;
           
-          // Resolve token symbol - use existing or fetch from blockchain
+          // Confirm token symbol - use existing info or fetch from Helius
           let tokenSymbol = transfer.tokenSymbol;
           if (!tokenSymbol) {
             tokenSymbol = await extractTokenSymbol(transfer.mint, heliusClient);
           }
           
-          // Create standardized token transfer record
+          // Create standardized token transfer object
           const tokenTransfer = {
             tokenMint: transfer.mint,
             amount: transfer.tokenAmount,
@@ -218,16 +220,15 @@ async function processTransactions(
           // Skip invalid transfers
           if (!transfer.fromUserAccount || !transfer.toUserAccount) continue;
           
-          // Determine if this transfer is incoming or outgoing relative to our wallet
+          // Determine if this transfer is incoming or outgoing relative wallet
           const isIncoming = transfer.toUserAccount === walletAddress;
           const isOutgoing = transfer.fromUserAccount === walletAddress;
           
-          if (!isIncoming && !isOutgoing) continue; // Skip transfers not related to our wallet
-          
-          // Calculate actual SOL amount
+          if (!isIncoming && !isOutgoing) continue; // Skip transfers not related searched wallet
+
           const actualSolAmount = transfer.amount / 1_000_000_000;
           
-          // Apply minimum threshold
+          // Apply minimum sol amount filter
           if (actualSolAmount < options.minSolAmount) continue;
           
           // Create token transfer object for SOL
@@ -242,7 +243,7 @@ async function processTransactions(
             tokenName: 'Solana'
           };
           
-          // Add to our arrays
+          // Add to arrays
           if (isIncoming) {
             incomingTransfers.push({...transfer, ...solTransfer});
           } else {
@@ -289,12 +290,12 @@ async function processTransactions(
         };
       }
 
-      // SECTION 4: CALCULATE USD VALUE
+
       let valueUSD: number | null = null;
 
-      // For SWAP transactions involving SOL, calculate USD value
+      // For SWAP transactions involving SOL workout USD value
       if (txType === 'SWAP') {
-        // Find if SOL was involved in the swap (sent or received)
+        // confirm if TX contains sol as part of swap
         const solToken = toToken?.symbol === 'SOL' || toToken?.symbol === 'WSOL' 
           ? toToken 
           : fromToken?.symbol === 'SOL' || fromToken?.symbol === 'WSOL' 
@@ -317,12 +318,12 @@ async function processTransactions(
           valueUSD = solAmount * solPriceUSD;
         }
       }
-      
-      // SECTION 5: CREATE FINAL TRANSACTION OBJECT
+
+      // FInal processed transaction object
       processedTransactions.push({
         signature: tx.signature,
         timestamp: tx.timestamp ? new Date(tx.timestamp * 1000).toISOString() : new Date().toISOString(),
-        fee: tx.fee || 0, // Legacy field, kept for compatibility
+        fee: tx.fee || 0,
         type: txType,
         tokenTransfers,
         fromToken,

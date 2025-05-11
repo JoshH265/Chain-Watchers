@@ -5,8 +5,8 @@ class SolPriceService {
     async getCurrentSolPrice(): Promise<number> {
         try {
             // Fetch from CoinGecko API
-            //const response = await axios.get('https://api.coingecko.com/api/v3/simple/price', {
-                const response = await axios.get('https://public-api.birdeye.so/defi/price?address=So11111111111111111111111111111111111111112', {
+            const response = await axios.get('https://api.coingecko.com/api/v3/simple/price', {
+                // const response = await axios.get('https://public-api.birdeye.so/defi/price?address=So11111111111111111111111111111111111111112', {
                 params: {
                     ids: 'solana',
                     vs_currencies: 'usd'
