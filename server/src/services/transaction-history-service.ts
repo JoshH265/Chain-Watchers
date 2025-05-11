@@ -141,6 +141,7 @@ async function processTransactions(
 ): Promise<Transaction[]> {
   // Fetch current SOL price for USD value calculations
   const solPriceUSD = await solPriceService.getCurrentSolPrice();
+  
   console.log(`Processing ${transactions.length} raw transactions with filters: minSol=${options.minSolAmount}, minToken=${options.minTokenAmount}`);
   let filteredCount = 0;
   
@@ -385,7 +386,7 @@ async function extractTokenSymbol(mint: string, heliusClient: any): Promise<stri
     return mint.substring(0, 4) + '...';
   } catch (error) {
     console.error(`Error fetching token symbol for ${mint}:`, error);
-    // Fallback of try catch block
+    // Fallback
     return mint.substring(0, 4) + '...';
   }
 }
