@@ -41,7 +41,6 @@ export async function GET(
   }
 }
 
-// Add similar functions for POST, PUT, DELETE if needed
 export async function POST(request: NextRequest, { params }: { params: { path: string[] } }) {
   // Similar implementation as GET, but handle request body
   const path = params.path || [];

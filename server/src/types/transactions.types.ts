@@ -1,6 +1,6 @@
 // Types related to transaction history and processing
 
-export type TransactionType = 'TOKEN_TRANSFER' | 'SWAP' | 'UNKNOWN';
+export type TransactionType = 'TRANSFER' | 'SWAP' | 'UNKNOWN';
 export type TransferDirection = 'in' | 'out';  // Explicitly define direction as a union type
 
 export interface TokenTransfer {

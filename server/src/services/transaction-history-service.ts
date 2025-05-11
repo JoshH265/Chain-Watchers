@@ -123,69 +123,71 @@ export async function getWalletTransactionHistory(
 }
 
 /**
- * Process transactions from the Helius REST API format to our app format
- * with USD value information based on SOL balance changes
+ * https://www.helius.dev/docs
+ * Claude Sonnet 3.7 - Utilised for initial build of this function and debugging
+ * 
+ * @param transactions Raw transaction data from Helius API
+ * @param walletAddress The user's wallet address to filter transfers for
+ * @param options Minimum thresholds to filter out "dust" transactions
+ * @returns Processed transactions with additional metadata
  */
 async function processTransactions(
   transactions: any[], 
   walletAddress: string,
   options = {
-    minSolAmount: 0.0001,
-    minTokenAmount: 0.001,
+    minSolAmount: 0.0001,  // Minimum SOL amount to include (filters dust)
+    minTokenAmount: 0.001, // Minimum token amount to include
   }
 ): Promise<Transaction[]> {
-  // Get current SOL price
+  // Fetch current SOL price for USD value calculations
   const solPriceUSD = await solPriceService.getCurrentSolPrice();
-  console.log(`Using SOL price: $${solPriceUSD} for transaction calculations`);
-  
   console.log(`Processing ${transactions.length} raw transactions with filters: minSol=${options.minSolAmount}, minToken=${options.minTokenAmount}`);
   let filteredCount = 0;
   
   const processedTransactions: Transaction[] = [];
   
+  // Process each transaction individually
   for (const tx of transactions) {
     try {
-      // Skip transactions without proper data
+      // Validate transaction has required data
       if (!tx.signature) {
         console.log('Skipping transaction without signature');
         continue;
       }
       
-      // Extract all token transfers
+      // Collections to track transfers in this transaction
       const tokenTransfers: TokenTransfer[] = [];
       let includeTransaction = false;
       
-      // Arrays to collect incoming and outgoing transfers for this transaction
+      // Track incoming/outgoing transfers separately to identify swap pairs
       const incomingTransfers: any[] = [];
       const outgoingTransfers: any[] = [];
       
-      // Process token transfers
+      // SECTION 1: PROCESS TOKEN TRANSFERS (NON-SOL TOKENS)
       if (tx.tokenTransfers && Array.isArray(tx.tokenTransfers)) {
         for (const transfer of tx.tokenTransfers) {
-          // Skip invalid transfers
           if (!transfer.fromUserAccount || !transfer.toUserAccount) continue;
           
-          // Determine if this transfer is incoming or outgoing relative to our wallet
+          // Determine transfer direction relative to user's wallet
           const isIncoming = transfer.toUserAccount === walletAddress;
           const isOutgoing = transfer.fromUserAccount === walletAddress;
           
-          if (!isIncoming && !isOutgoing) continue; // Skip transfers not related to our wallet
+          if (!isIncoming && !isOutgoing) continue; // Skip irrelevant transfers
           
-          // Calculate actual token amount
+          // Convert raw token amount to actual amount using token decimals
           const decimals = transfer.decimals || 0;
           const actualAmount = transfer.tokenAmount / Math.pow(10, decimals);
           
-          // Apply minimum threshold
+          // Filter out dust transactions
           if (actualAmount < options.minTokenAmount) continue;
           
-          // Get token symbol - use the one provided or fetch it
+          // Resolve token symbol - use existing or fetch from blockchain
           let tokenSymbol = transfer.tokenSymbol;
           if (!tokenSymbol) {
-            // If no symbol is provided, try to get it from Helius
             tokenSymbol = await extractTokenSymbol(transfer.mint, heliusClient);
           }
           
-          // Create token transfer object
+          // Create standardized token transfer record
           const tokenTransfer = {
             tokenMint: transfer.mint,
             amount: transfer.tokenAmount,
@@ -197,7 +199,7 @@ async function processTransactions(
             tokenName: transfer.tokenName || 'Unknown Token'
           };
           
-          // Add to our arrays
+          // Categorize by direction for later swap detection
           if (isIncoming) {
             incomingTransfers.push({...transfer, ...tokenTransfer});
           } else {
@@ -250,24 +252,23 @@ async function processTransactions(
           includeTransaction = true;
         }
       }
-      
-      // Skip transaction if it doesn't meet our criteria
+      // Skip this transaction if no relevant transfers were found
       if (!includeTransaction) {
         filteredCount++;
         continue;
       }
       
-      // Determine transaction type
-      const txType = determineTransactionType(tx);
+      // Determine if this is a SWAP or TRANSFER transaction
+      const txType = confirmedTransactionType(tx);
       
-      // Set fromToken and toToken based on our collected transfers
+      // SECTION 3: IDENTIFY SOURCE AND DESTINATION TOKENS
+      // For display purposes, identify what tokens were sent and received
       let fromToken: TokenInfo | undefined = undefined;
       let toToken: TokenInfo | undefined = undefined;
       
-      // For swaps and token transfers, we want to show what was sent OUT as FROM
-      // and what was received IN as TO
+      // What the user sent OUT becomes the source (FROM) token
       if (outgoingTransfers.length > 0) {
-        const outTransfer = outgoingTransfers[0]; // Use the first outgoing transfer
+        const outTransfer = outgoingTransfers[0]; // Use first outgoing transfer
         fromToken = {
           mint: outTransfer.tokenMint,
           symbol: outTransfer.tokenSymbol,
@@ -276,8 +277,9 @@ async function processTransactions(
         };
       }
       
+      // What the user received IN becomes the destination (TO) token
       if (incomingTransfers.length > 0) {
-        const inTransfer = incomingTransfers[0]; // Use the first incoming transfer
+        const inTransfer = incomingTransfers[0]; // Use first incoming transfer
         toToken = {
           mint: inTransfer.tokenMint,
           symbol: inTransfer.tokenSymbol,
@@ -286,12 +288,12 @@ async function processTransactions(
         };
       }
 
-      // Calculate USD value based on SOL changes
+      // SECTION 4: CALCULATE USD VALUE
       let valueUSD: number | null = null;
 
-      // If swap with SOL/WSOL, use the SOL amount for value
+      // For SWAP transactions involving SOL, calculate USD value
       if (txType === 'SWAP') {
-        // Check if SOL/WSOL is being received or sent
+        // Find if SOL was involved in the swap (sent or received)
         const solToken = toToken?.symbol === 'SOL' || toToken?.symbol === 'WSOL' 
           ? toToken 
           : fromToken?.symbol === 'SOL' || fromToken?.symbol === 'WSOL' 
@@ -299,15 +301,15 @@ async function processTransactions(
             : null;
         
         if (solToken) {
-          // Calculate based on SOL amount
+          // Convert raw SOL amount to actual SOL and multiply by current price
           const solAmount = solToken.amount / Math.pow(10, solToken.decimals);
           valueUSD = solAmount * solPriceUSD;
           console.log(`Calculated USD value based on SOL amount: $${valueUSD}`);
         }
       }
       
-      //For direct SOL transfers (so not trading or swapping but moving to and from wallets)
-      if (!valueUSD && txType === 'TOKEN_TRANSFER') {
+      // For direct SOL transfers between wallets
+      if (!valueUSD && txType === 'TRANSFER') {
         const solTransfer = tokenTransfers.find(t => t.tokenSymbol === 'SOL');
         if (solTransfer) {
           const solAmount = solTransfer.amount / Math.pow(10, solTransfer.decimals);
@@ -315,11 +317,11 @@ async function processTransactions(
         }
       }
       
-      // Create the transaction object
+      // SECTION 5: CREATE FINAL TRANSACTION OBJECT
       processedTransactions.push({
         signature: tx.signature,
         timestamp: tx.timestamp ? new Date(tx.timestamp * 1000).toISOString() : new Date().toISOString(),
-        fee: tx.fee || 0, // not being used anymore but too much hassle to remove everywehre
+        fee: tx.fee || 0, // Legacy field, kept for compatibility
         type: txType,
         tokenTransfers,
         fromToken,
@@ -327,6 +329,7 @@ async function processTransactions(
         valueUSD
       });
     } catch (err) {
+      // Handle errors per transaction to prevent entire batch failure
       console.error(`Error processing transaction:`, err);
     }
   }
@@ -335,12 +338,16 @@ async function processTransactions(
   return processedTransactions;
 }
 
+
+
 /**
- * Determines the transaction type based on its content and description
+ * Determines the transaction by action and/or description of Tx
  */
-function determineTransactionType(transaction: any): TransactionType {
+function confirmedTransactionType(transaction: any): TransactionType {
   // If multiple token transfers or description includes swap, likely a swap
   if (
+    // If multiple token(s) transferred in same transction then marked as swap
+    // Or if TX desc includes info
     (transaction.tokenTransfers && transaction.tokenTransfers.length > 1) ||
     (transaction.description && transaction.description.toLowerCase().includes('swap'))
   ) {
@@ -348,14 +355,14 @@ function determineTransactionType(transaction: any): TransactionType {
   }
   
   // Default to token transfer
-  return 'TOKEN_TRANSFER';
+  return 'TRANSFER';
 }
 
-/**
- * Extract a token symbol from mint address using Helius's getAsset method
- */
+
+// Extract a token symbol from mint address using  getAsset method via Helius
 async function extractTokenSymbol(mint: string, heliusClient: any): Promise<string> {
-  // Handle known tokens without needing to break down response data for efficiency
+  // Wrapped sol mint address - reduces API calls
+  // Add more known tokens later date if needed
   if (mint === 'So11111111111111111111111111111111111111112') {
     return 'SOL';
   }
