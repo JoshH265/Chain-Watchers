@@ -121,30 +121,35 @@ export async function updateWalletInDatabase(id: string, data: { wallet: string;
 }
 
 /**
- * Fetch transaction history for a wallet
+ * Fetches transaction history for a specific wallet address
+ * @param walletAddress - The blockchain address to fetch transactions for
+ * @param options - Optional parameters for pagination and filtering
+ * @returns Promise containing transaction data and pagination cursor
  */
 export async function getTransactionHistory(
   walletAddress: string,
   options: {
-    limit?: number;
-    before?: string;
-    after?: string;
-    cursor?: string;
+    limit?: number; // transaction limit
+    before?: string; // transaction before X 
+    after?: string; // transactions after x
+    cursor?: string; // cursor for pagination
   } = {}
 ): Promise<TransactionHistoryResponse> {
   try {
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
     
-    // Build query parameters
+    // Build query 
     const queryParams = new URLSearchParams();
     if (options.limit) queryParams.append('limit', options.limit.toString());
     if (options.before) queryParams.append('before', options.before);
     if (options.after) queryParams.append('after', options.after);
     if (options.cursor) queryParams.append('cursor', options.cursor);
     
+    // Convery the query params into a query string
     const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
     
     const response = await fetch(
+      // Make request to the middleware API route.ts
       `${API_URL}/api/transaction-history/transactions/${walletAddress}${queryString}`
     );
     

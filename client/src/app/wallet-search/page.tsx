@@ -44,7 +44,9 @@ const WalletSearch: React.FC = () => {
         fetchStoredWallets();
     }, []);
 
-    // Check if wallet pattern is valid (basic Solana address validation)
+    // Check if wallet pattern is valid 
+    // https://solana.com/developers/cookbook/wallets/create-keypair
+    // Solana wallets use base58 encoding
     const isValidWalletPattern = (address: string) => {
         return /^[A-HJ-NP-Za-km-z1-9]{32,44}$/.test(address);
     };
@@ -54,23 +56,20 @@ const WalletSearch: React.FC = () => {
         const updatedHistory = [
             wallet, 
             ...searchHistory.filter(item => item !== wallet)
-        ].slice(0, 5); // Keep only last 5 searches
+        ].slice(0, 5); // Keeps last 5 searches
         
         setSearchHistory(updatedHistory);
         localStorage.setItem('walletSearchHistory', JSON.stringify(updatedHistory));
     };
 
     // Handle input change with auto-search
+    // https://stackoverflow.com/questions/40676343/typescript-input-onchange-event-target-value
     const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setWalletAddress(value);
         
         // Clear previous results
-        if (!value) {
-            setSearchResult(null);
-            setShowDropdown(false);
-            setTokens([]);
-            setSolBalance(null);
+        if (!value) { setSearchResult(null); setShowDropdown(false); setTokens([]); setSolBalance(null);
             return;
         }
         
@@ -88,27 +87,23 @@ const WalletSearch: React.FC = () => {
             alert('Please enter a wallet address');
             return;
         }
-
+    
         setIsSearching(true);
         setError(null);
-
+    
         try {
-            const { solBalance, tokens: activeTokens } = await getWalletdata(address);
-
+            const { solBalance } = await getWalletdata(address);
+    
             setSolBalance(parseFloat(solBalance.toFixed(2)));
             
             // Check if wallet exists in stored wallets
             const storedWallet = storedWallets.find(w => w.wallet === address);
             
             // Get last activity from transaction history
-            let lastActivity = "Unknown";
+            let lastActivity = 'N/A';
             try {
                 const txHistory = await getTransactionHistory(address, { limit: 1 });
                 
-                // Debug: Let's see what's actually in the response
-                console.log('Transaction history response:', txHistory);
-                
-                // Access the transactions from the response according to TransactionHistoryResponse type
                 const transactions = txHistory.transactions || [];
                 
                 if (transactions && transactions.length > 0) {
@@ -129,36 +124,8 @@ const WalletSearch: React.FC = () => {
             });
             
             setShowDropdown(true);
-
-            if (activeTokens.length > 0) {
-                const mintAddresses = activeTokens.map((token: Token) => token.mint);
-                const metadata = await getTokenMetadata(mintAddresses);
-
-                const tokensWithDetails = activeTokens.map((token: Token) => {
-                    const tokenMetadata = metadata?.find(
-                        (meta: TokenMetadata) => meta?.id === token.mint
-                    );
-
-                    return {
-                        mint: token.mint,
-                        tokenName: tokenMetadata?.content?.metadata?.name || 
-                                 tokenMetadata?.content?.json?.name ||
-                                 'Unknown',
-                        tokenSymbol: tokenMetadata?.content?.metadata?.symbol || 
-                                   tokenMetadata?.content?.json?.symbol ||
-                                   '???',
-                        balance: parseFloat((token.amount / Math.pow(10, token.decimals)).toFixed(2)),
-                        decimals: token.decimals
-                    };
-                });
-
-                setTokens(tokensWithDetails);
-                setError(null);
-            } else {
-                setError('No token data found');
-                setTokens([]);
-            }
-
+    
+    
         } catch (error) {
             console.error('Error:', error);
             setError('Failed to fetch tokens');

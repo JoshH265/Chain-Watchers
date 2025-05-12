@@ -263,8 +263,7 @@ async function processTransactions(
       // Determine if this is a SWAP or TRANSFER transaction
       const txType = confirmedTransactionType(tx);
       
-      // SECTION 3: IDENTIFY SOURCE AND DESTINATION TOKENS
-      // For display purposes, identify what tokens were sent and received
+      // For display purposes - identify what tokens were sent and received
       let fromToken: TokenInfo | undefined = undefined;
       let toToken: TokenInfo | undefined = undefined;
       
