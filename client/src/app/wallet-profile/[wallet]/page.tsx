@@ -262,10 +262,6 @@ export default function WalletProfile() {
         /**
          * Initializes an array with the token address of the largest non-SOL token in the wallet,
          * if one exists. If there is no non-SOL token, initializes an empty array.
-         * 
-         * This is a conditional initialization:
-         * - If largestNonSolToken exists (truthy), take its mint address and put it in an array
-         * - If largestNonSolToken doesn't exist (falsy), use an empty array instead
          */
         const initialTokenAddress = largestNonSolToken ? [largestNonSolToken.mint] : [];
         const { tokenPrices, isLoading: isPriceLoading } = useTokenPriceData(initialTokenAddress);
