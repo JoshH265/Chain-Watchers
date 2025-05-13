@@ -4,7 +4,7 @@
 - npm (version 10.8.2 or higher)
 - Next (version 14)
 - React (version 18.2.0 or higher)
-- MongoDB (since your project uses mongodb/mongoose)
+- MongoDB
 
 ## Installation
 
