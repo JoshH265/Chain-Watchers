@@ -1,44 +1,47 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Dependencies
+node_modules/
+**/node_modules/
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# Build outputs
+dist/
+**/dist/
+.next/
+out/
 
-# testing
-/coverage
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# next.js
-/.next/
-/out/
+# Next.js specific
+client/.next/
+client/next-env.d.ts
+.vercel
 
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
+# Debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
 
-# vercel
-.vercel
+# OS files
+.DS_Store
+Thumbs.db
 
-# typescript
+# Keep public assets in Git (commenting these out as you likely want to keep them)
+# client/public/
+
+# TypeScript cache
 *.tsbuildinfo
-next-env.d.ts
 
-# env
-.env.local
+# Optional: Font files if they're large (uncomment if needed)
+# client/src/fonts/*.ttf
+# client/src/fonts/*.woff
+# client/src/fonts/*.woff2
