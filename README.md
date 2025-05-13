@@ -13,7 +13,7 @@
     npm install
 
     
-3. Set up environment variables
+3. Set up environment variables - found in BB submission
     Create a `.env.local` file in the root directory
     Create a `.env.local` file in the client directory
     Create a `.env` file in the server directory
@@ -21,7 +21,7 @@
 
 
 
-4. Start the development server
+5. Start the development server
 npm run dev
 or
 npm run client
